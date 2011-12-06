@@ -1,1 +1,16 @@
 Here's my adam device tree for android 4.0.1 ASOP.
+
+Copy to android/device/notionink/adam/
+
+go back to source root
+
+Shell Type: ". build/envsetup.sh"
+
+Let it finish.
+
+Shell Type: "lunch full_adam-userdebug"
+
+Wait for it to get done.
+
+Then type: "time make -j16" (replace 16 with whatever your machine can handle.)
+
