@@ -14,6 +14,8 @@ PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
 PRODUCT_COPY_FILES += \
 	$(LOCAL_KERNEL):kernel \
 	$(LOCAL_PATH)/wifi/bcm4329.ko:system/lib/hw/wlan/bcm4329.ko \
+	$(LOCAL_PATH)/wifi/fw_bcm4329.bin:system/lib/hw/wlan/fw_bcm4329.bin \
+	$(LOCAL_PATH)/wifi/fw_bcm4329_apsta.bin:system/lib/hw/wlan/fw_bcm4329_apsta.bin \
 	$(LOCAL_PATH)/prebuilt/init.harmony.rc:root/init.harmony.rc \
 	$(LOCAL_PATH)/prebuilt/init.rc:root/init.rc \
 	$(LOCAL_PATH)/prebuilt/ueventd.harmony.rc:root/ueventd.harmony.rc \
