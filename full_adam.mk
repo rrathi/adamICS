@@ -8,6 +8,9 @@ else
         LOCAL_KERNEL := $(TARGET_PREBUILT_KERNEL)
 endif
 
+PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
+	persist.service.adb.enable=1 
+
 PRODUCT_COPY_FILES += \
 	$(LOCAL_KERNEL):kernel \
 	$(LOCAL_PATH)/wifi/bcm4329.ko:system/lib/hw/wlan/bcm4329.ko \
