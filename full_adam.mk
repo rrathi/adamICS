@@ -16,6 +16,7 @@ PRODUCT_COPY_FILES += \
 	$(LOCAL_PATH)/prebuilt/ueventd.harmony.rc:root/ueventd.harmony.rc \
 	$(LOCAL_PATH)/prebuilt/ueventd.rc:root/ueventd.rc \
 	$(LOCAL_PATH)/prebuilt/nvram.txt:system/etc/nvram.txt \
+	$(LOCAL_PATH)/prebuilt/at168_touch.idc:system/usr/idc/at168_touch.idc \
 	$(LOCAL_PATH)/prebuilt/vold.fstab:system/etc/vold.fstab 
 
 PRODUCT_PACKAGES += \

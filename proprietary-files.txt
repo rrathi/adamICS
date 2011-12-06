@@ -20,4 +20,3 @@ lib/libaudio.so
 lib/libmlplatform.so
 lib/libmllite.so
 lib/libmpl.so
-usr/idc/at168_touch.idc
