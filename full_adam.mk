@@ -16,6 +16,7 @@ PRODUCT_COPY_FILES += \
 	$(LOCAL_PATH)/wifi/bcm4329.ko:system/lib/hw/wlan/bcm4329.ko \
 	$(LOCAL_PATH)/wifi/fw_bcm4329.bin:system/lib/hw/wlan/fw_bcm4329.bin \
 	$(LOCAL_PATH)/wifi/fw_bcm4329_apsta.bin:system/lib/hw/wlan/fw_bcm4329_apsta.bin \
+	$(LOCAL_PATH)/wifi/scsi_wait_scan.ko:system/lib/hw/wlan/scsi_wait_scan.ko \
 	$(LOCAL_PATH)/prebuilt/init.harmony.rc:root/init.harmony.rc \
 	$(LOCAL_PATH)/prebuilt/init.rc:root/init.rc \
 	$(LOCAL_PATH)/prebuilt/ueventd.harmony.rc:root/ueventd.harmony.rc \
@@ -41,6 +42,9 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PACKAGES += \
     librs_jni \
     libreference-ril
+
+BOARD_WLAN_DEVICE_REV := bcm4329
+WIFI_BAND             := 802_11_ABG
 
 # Inherit from those products. Most specific first.
 $(call inherit-product, $(SRC_TARGET_DIR)/product/full_base.mk)
