@@ -1,0 +1,172 @@
+on early-init
+    mount debugfs debugfs /sys/kernel/debug
+
+    export EXTERNAL_STORAGE /mnt/sdcard
+    mkdir /mnt/sdcard 0000 system system
+    # for backwards compatibility
+    symlink /mnt/sdcard /sdcard
+    mkdir /mnt/external1 0000 system system
+    mkdir /mnt/external2 0000 system system
+
+on fs
+    # Mount /system rw first to give the filesystem a chance to save a checkpoint
+    mount yaffs2 mtd@system /system
+    mount yaffs2 mtd@system /system ro remount
+    setprop ro.crypto.tmpfs_options size=128m,mode=0771,uid=1000,gid=1000
+    mount ext4 /dev/block/mmcblk0p2 /data wait noatime nosuid nodev
+    mount vfat /dev/block/mmcblk0p1 /sdcard wait noatime nosuid nodev
+    mount yaffs2 mtd@cache /cache wait noatime nosuid nodev
+    mkdir /flexrom 0770 root system
+
+
+on post-fs-data
+    mkdir /data/misc/wifi 0770 wifi wifi
+    mkdir /data/misc/wifi/sockets 0770 wifi wifi
+    mkdir /data/misc/dhcp 0770 dhcp dhcp
+    chown dhcp dhcp /data/misc/dhcp
+
+    # we will remap this as /mnt/sdcard with the sdcard fuse tool
+#    mkdir /data/media 0775 media_rw media_rw
+#    chown media_rw media_rw /data/media
+
+    # Set indication (checked by vold) that we have finished this action
+    setprop vold.post_fs_data_done 1
+
+
+on boot
+# bluetooth permissions
+    chmod 0660 /dev/ttyHS2
+    chown bluetooth bluetooth /dev/ttyHS2
+    chmod 0660 /sys/class/rfkill/rfkill0/state
+    chmod 0660 /sys/class/rfkill/rfkill0/type
+    chown bluetooth bluetooth /sys/class/rfkill/rfkill0/state
+    chown bluetooth bluetooth /sys/class/rfkill/rfkill0/type
+    write /sys/class/rfkill/rfkill0/state 0
+    symlink /system/lib/hw/wlan/bcm4329B1.hcd /data/BCM4329B1.hcd
+    symlink /system/lib/hw/wlan/bcm4329B1.hcd /data/bcm4329B1.hcd
+    chmod 0777 /data/bcm4329B1.hcd
+
+# backlight
+    chown system system /sys/class/backlight/pwm-backlight/brightness
+
+# Sensor
+    chmod 666 /dev/nvhost-ctrl
+    chmod 666 /dev/nvhost-display
+    chmod 666 /dev/nvhost-dsi
+    chmod 666 /dev/nvhost-gr2d
+    chmod 666 /dev/nvhost-gr3d
+    chmod 666 /dev/nvhost-isp
+    chmod 666 /dev/nvhost-mpe
+    chmod 666 /dev/nvhost-vi
+    chmod 664 /sys/bus/iio/devices/device0/lux
+    chmod 664 /sys/bus/iio/devices/device0/proxim_ir
+
+
+# Power management settings
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 216000
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1000000
+    write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor interactive
+    write /sys/devices/system/cpu/cpu1/cpufreq/scaling_min_freq 216000
+    write /sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq 1000000
+    write /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor interactive
+    write /sys/devices/system/cpu/cpufreq/interactive/go_maxspeed_load 80
+
+# WIFI SKU GPS (BCM)
+on property:ro.dinfo.radio=Wifi
+    write /sys/class/gpio/export 203
+    write /sys/class/gpio/gpio203/value 0
+    write /sys/class/gpio/gpio203/direction out
+
+
+# FOR Ericsson GPS
+on property:ro.dinfo.radio=3G
+    chmod 666 /dev/bus/usb/002/049
+    chown root root /dev/bus/usb/002/049
+
+
+service wpa_supplicant /system/bin/wpa_supplicant \
+    -Dwext -iwlan0 -c/data/misc/wifi/wpa_supplicant.conf
+#   we will start as root and wpa_supplicant will switch to user wifi
+#   after setting up the capabilities required for WEXT
+#   user wifi
+#   group wifi inet keystore
+    class main
+    socket wpa_wlan0 dgram 660 wifi wifi
+    disabled
+    oneshot
+
+service dhcpcd_wlan0 /system/bin/dhcpcd -ABKL
+    class main
+    disabled
+    oneshot
+
+# bluetooth
+service dhcpcd_bnep0 /system/bin/dhcpcd -ABKL
+    disabled
+    oneshot
+
+service iprenew_wlan0 /system/bin/dhcpcd -n
+    disabled
+    oneshot
+
+# create virtual SD card at /mnt/sdcard, based on the /data/media directory
+# deamon will drop to user/group system/media_rw after initializing
+# underlying files in /data/media wil be created with user and group media_rw (1023)
+#service sdcard /system/bin/sdcard /data/media 1023 1023
+#    class late_start
+
+#BCM
+#service hciattach /system/bin/brcm_patchram_plus --enable_hci \
+#    --baudrate 2700000 --patchram /system/lib/hw/wlan/bcm4329.hcd --pcm_role slave \
+#    --enable_lpm /dev/ttyHS2
+#    class main
+#    user bluetooth
+#    group bluetooth net_bt_admin
+#    disabled
+service hciattach /system/bin/nv_hciattach -n -t 100 -s 115200 ttyHS2 bcm4329 921600 flowi
+	user bluetooth
+	group system bluetooth net_bt_admin misc
+	oneshot
+	disabled
+
+# Start GPS daemon
+service gps-daemon /system/bin/glgps_nvidiaTegra2android -c /system/etc/gps/gpsconfig.xml
+    class late_start
+    user root
+    group root
+
+#Prepare TF service
+service tf_daemon /system/bin/tf_daemon -storageDir /data/tf
+    disabled
+    class main
+    user root
+    group shell
+    oneshot
+
+#Create data directory and start service
+on property:tf.enable=y
+    mkdir /data/tf
+    start tf_daemon
+
+service picasso_postboot /system/bin/sh /picasso_postboot.sh
+    user root
+    oneshot
+
+on property:init.svc.bootanim=stopped
+    start picasso_postboot
+
+# cmd_server service
+service cmd_server /system/bin/cmd_server_daemon
+    class late_start
+    user root
+
+# Enable tcpdump-service
+#service netdump-service /system/xbin/tcpdump -i any -C 5 -p -s 0 -w /sdcard/netdump.cap
+#    user root
+#    disabled
+#
+#on property:net.netdump.enable=1
+#    start netdump-service
+#
+#on property:net.netdump.enable=0
+#    stop netdump-service

@@ -1,5 +1,4 @@
 # mount point	fstype		device			[device2]
-
 /boot           mtd		boot
 /cache		yaffs2		cache
 /data		ext3		/dev/block/mmcblk3p2
