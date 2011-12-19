@@ -1,0 +1,15 @@
+lib/egl/libEGL_tegra.so
+lib/egl/libGLESv1_CM_tegra.so
+lib/egl/libGLESv2_tegra.so
+lib/libcgdrv.so
+lib/libnvddk_2d.so
+lib/libnvddk_2d_v2.so
+lib/libnvdispmgr_d.so
+lib/libnvos.so
+lib/libnvrm_channel.so
+lib/libnvrm_graphics.so
+lib/libnvrm.so
+lib/libnvwsi.so
+lib/hw/gralloc.tegra.so
+lib/hw/hwcomposer.tegra.so
+lib/libardrv_dynamic.so

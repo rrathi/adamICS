@@ -1,0 +1,15 @@
+## Vold 2.0 fstab
+
+#######################
+## Regular device mount
+##
+## Format: dev_mount <label> <mount_point> <part> <sysfs_path1...>
+## label        - Label for the volume
+## mount_point  - Where the volume will be mounted
+## part         - Partition # (1 based), or 'auto' for first usable partition.
+## <sysfs_path> - List of sysfs paths to source devices
+######################
+
+# Configuration of Picasso
+dev_mount external_sdcard /mnt/external_sd auto /devices/platform/sdhci-tegra.2/mmc_host/mmc1
+dev_mount external_usb_disk /mnt/usb_storage auto /devices/platform/tegra-ehci.2/usb1
