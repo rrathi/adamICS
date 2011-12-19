@@ -1,0 +1,6 @@
+GPS Library for the Notion Ink Adam
+
+Reads the data from a tty port (Defined in gpslib.c) and provides it to Android.
+This is built for the GB/HC interface. Note that HC* and AC0.1 - AC0.2 will need to replace 'linker' in the system/bin directory.
+A bin from the TF or Iconia should be sufficient.
+

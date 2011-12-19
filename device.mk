@@ -38,8 +38,9 @@ DEVICE_PACKAGE_OVERLAYS := device/notionink/adam/overlay
 PRODUCT_COPY_FILES := \
     $(LOCAL_KERNEL):kernel \
     device/notionink/adam/files/init.harmony.rc:root/init.harmony.rc \
-    device/notionink/adam/files/ueventd.harmony.rc:root/ueventd.harmony.rc
-
+    device/notionink/adam/files/ueventd.harmony.rc:root/ueventd.harmony.rc \
+    device/notionink/adam/files/nvram.txt:system/etc/wifi/nvram.txt
+    
 # APK
 #PRODUCT_COPY_FILES += \
 #    device/notionink/adam/app/Quadrant.apk:system/app/Quadrant.apk \
@@ -48,9 +49,8 @@ PRODUCT_COPY_FILES := \
 
 # Modules
 PRODUCT_COPY_FILES += \
-    device/notionink/adam/modules/scsi_wait_scan.ko:system/lib/hw/wlan/scsi_wait_scan.ko \
-    device/notionink/adam/modules/bcm4329.ko:system/lib/hw/wlan/bcm4329.ko \
-    device/notionink/adam/files/nvram.txt:system/lib/hw/wlan/nvram.txt
+    device/notionink/adam/modules/scsi_wait_scan.ko:system/lib/modules/scsi_wait_scan.ko \
+    device/notionink/adam/modules/bcm4329.ko:system/lib/modules/bcm4329.ko
 
 # Bluetooth
 PRODUCT_COPY_FILES += \
@@ -66,8 +66,7 @@ PRODUCT_COPY_FILES += \
 
 # Generic
 PRODUCT_COPY_FILES += \
-   device/notionink/adam/files/vold.fstab:system/etc/vold.fstab \
-   device/notionink/adam/files/gps.conf:system/etc/gps.conf
+   device/notionink/adam/files/vold.fstab:system/etc/vold.fstab
 
 PRODUCT_PROPERTY_OVERRIDES := \
     wifi.interface=wlan0 \
@@ -76,17 +75,19 @@ PRODUCT_PROPERTY_OVERRIDES := \
 
 # Live Wallpapers
 PRODUCT_PACKAGES += \
-        LiveWallpapers \
+	HoloSpiralWallpaper \
         LiveWallpapersPicker \
-        VisualizationWallpapers \
-        Basic \
-        Galaxy4 \
-        HoloSpiral \
-        LivePicker \
-        MagicSmoke \
-        MusicVisualization \
-        NoiseField \
-        PhaseBeam 
+        VisualizationWallpapers
+
+PRODUCT_PACKAGES += \
+        audio.a2dp.default \
+        libaudioutils
+
+PRODUCT_PACKAGES += \
+	sensors.harmony \
+	lights.harmony \
+	gps.harmony \
+	libmbm-ril
         
 # These are the hardware-specific features
 PRODUCT_COPY_FILES += \
@@ -99,7 +100,6 @@ PRODUCT_COPY_FILES += \
     frameworks/base/data/etc/android.hardware.wifi.direct.xml:system/etc/permissions/android.hardware.wifi.direct.xml \
     frameworks/base/data/etc/android.hardware.sensor.proximity.xml:system/etc/permissions/android.hardware.sensor.proximity.xml \
     frameworks/base/data/etc/android.hardware.sensor.light.xml:system/etc/permissions/android.hardware.sensor.light.xml \
-    frameworks/base/data/etc/android.hardware.sensor.gyroscope.xml:system/etc/permissions/android.hardware.sensor.gyroscope.xml \
     frameworks/base/data/etc/android.hardware.sensor.accelerometer.xml:system/etc/permissions/android.hardware.sensor.accelerometer.xml \
     frameworks/base/data/etc/android.hardware.touchscreen.multitouch.jazzhand.xml:system/etc/permissions/android.hardware.touchscreen.multitouch.jazzhand.xml \
     frameworks/base/data/etc/android.software.sip.voip.xml:system/etc/permissions/android.software.sip.voip.xml \

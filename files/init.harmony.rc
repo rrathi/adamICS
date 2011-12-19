@@ -16,8 +16,6 @@ on fs
     mount ext4 /dev/block/mmcblk0p2 /data wait noatime nosuid nodev
     mount vfat /dev/block/mmcblk0p1 /sdcard wait noatime nosuid nodev
     mount yaffs2 mtd@cache /cache wait noatime nosuid nodev
-    mkdir /flexrom 0770 root system
-
 
 on post-fs-data
     mkdir /data/misc/wifi 0770 wifi wifi
@@ -71,18 +69,10 @@ on boot
     write /sys/devices/system/cpu/cpu1/cpufreq/scaling_governor interactive
     write /sys/devices/system/cpu/cpufreq/interactive/go_maxspeed_load 80
 
-# WIFI SKU GPS (BCM)
-on property:ro.dinfo.radio=Wifi
-    write /sys/class/gpio/export 203
-    write /sys/class/gpio/gpio203/value 0
-    write /sys/class/gpio/gpio203/direction out
-
-
-# FOR Ericsson GPS
-on property:ro.dinfo.radio=3G
-    chmod 666 /dev/bus/usb/002/049
-    chown root root /dev/bus/usb/002/049
-
+# GPS
+    mkdir /data/gps
+    chown system system /data/gps
+    chmod 770 /data/gps
 
 service wpa_supplicant /system/bin/wpa_supplicant \
     -Dwext -iwlan0 -c/data/misc/wifi/wpa_supplicant.conf
@@ -116,6 +106,14 @@ service iprenew_wlan0 /system/bin/dhcpcd -n
 #    class late_start
 
 #BCM
+service hciattach /system/bin/brcm_patchram_plus --enable_hci \
+    --baudrate 3000000 --use_baudrate_for_download --patchram /system/etc/firmware/bcm4329.hcd --tosleep 50000 \
+    --i2s=1,1,0,1 --enable_lpm /dev/ttyHS2
+    class main
+    user root
+    group system bluetooth net_bt_admin misc
+    oneshot
+    disabled
 #service hciattach /system/bin/brcm_patchram_plus --enable_hci \
 #    --baudrate 2700000 --patchram /system/lib/hw/wlan/bcm4329.hcd --pcm_role slave \
 #    --enable_lpm /dev/ttyHS2
@@ -123,42 +121,35 @@ service iprenew_wlan0 /system/bin/dhcpcd -n
 #    user bluetooth
 #    group bluetooth net_bt_admin
 #    disabled
-service hciattach /system/bin/nv_hciattach -n -t 100 -s 115200 ttyHS2 bcm4329 921600 flowi
-	user bluetooth
-	group system bluetooth net_bt_admin misc
-	oneshot
-	disabled
+#service hciattach /system/bin/nv_hciattach -n -t 100 -s 115200 ttyHS2 bcm4329 921600 flowi
+#	user bluetooth
+#	group system bluetooth net_bt_admin misc
+#	oneshot
+#	disabled
 
 # Start GPS daemon
-service gps-daemon /system/bin/glgps_nvidiaTegra2android -c /system/etc/gps/gpsconfig.xml
-    class late_start
-    user root
-    group root
+#service gps-daemon /system/bin/glgps_nvidiaTegra2android -c /system/etc/gps/gpsconfig.xml
+#    class late_start
+#    user root
+#    group root
 
 #Prepare TF service
-service tf_daemon /system/bin/tf_daemon -storageDir /data/tf
-    disabled
-    class main
-    user root
-    group shell
-    oneshot
+#service tf_daemon /system/bin/tf_daemon -storageDir /data/tf
+#    disabled
+#    class main
+#    user root
+#    group shell
+#    oneshot
 
 #Create data directory and start service
-on property:tf.enable=y
-    mkdir /data/tf
-    start tf_daemon
-
-service picasso_postboot /system/bin/sh /picasso_postboot.sh
-    user root
-    oneshot
-
-on property:init.svc.bootanim=stopped
-    start picasso_postboot
+#on property:tf.enable=y
+#    mkdir /data/tf
+#    start tf_daemon
 
 # cmd_server service
-service cmd_server /system/bin/cmd_server_daemon
-    class late_start
-    user root
+#service cmd_server /system/bin/cmd_server_daemon
+#    class late_start
+#    user root
 
 # Enable tcpdump-service
 #service netdump-service /system/xbin/tcpdump -i any -C 5 -p -s 0 -w /sdcard/netdump.cap

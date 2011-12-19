@@ -19,8 +19,8 @@
 BOARD_USES_GENERIC_AUDIO := true
 USE_CAMERA_STUB := false
 
-BOARD_USES_AUDIO_LEGACY := true
-TARGET_USES_OLD_LIBSENSORS_HAL := true
+BOARD_USES_AUDIO_LEGACY := false
+TARGET_USES_OLD_LIBSENSORS_HAL := false
 
 # Use the non-open-source parts, if they're present
 -include vendor/notionink/adam/BoardConfigVendor.mk
@@ -78,14 +78,14 @@ BOARD_HOSTAPD_PRIVATE_LIB := lib_driver_cmd_wext
 
 BOARD_WLAN_DEVICE           := bcm4329
 WIFI_DRIVER_FW_PATH_PARAM   := "/sys/module/bcm4329/parameters/firmware_path"
-WIFI_DRIVER_MODULE_PATH     := "/system/lib/hw/wlan/bcm4329.ko"
+WIFI_DRIVER_MODULE_PATH     := "/system/lib/modules/bcm4329.ko"
 WIFI_DRIVER_FW_PATH_STA     := "/system/vendor/firmware/fw_bcm4329.bin"
 WIFI_DRIVER_FW_PATH_AP      := "/system/vendor/firmware/fw_bcm4329_apsta.bin"
 # Following statement causes issues with compiling.
 #BOARD_WLAN_DEVICE_REV := bcm4329
 # These *shouldn't* be needed with bcmdhd anymore.
 WIFI_DRIVER_MODULE_NAME     := "bcm4329"
-WIFI_DRIVER_MODULE_ARG      := "firmware_path=/system/vendor/firmware/fw_bcm4329.bin nvram_path=/system/lib/hw/wlan/nvram.txt iface_name=wlan0"
+WIFI_DRIVER_MODULE_ARG      := "firmware_path=/system/vendor/firmware/fw_bcm4329.bin nvram_path=/system/etc/wifi/nvram.txt iface_name=wlan0"
 
 BOARD_HAVE_BLUETOOTH := true
 BOARD_HAVE_BLUETOOTH_BCM := true

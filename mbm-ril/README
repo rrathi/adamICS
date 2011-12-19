@@ -1,0 +1,13 @@
+
+  Ericsson MBM Android Radio Interface Layer
+
+BUILDING
+
+ Apply kernel and initialization script patches:
+
+   # patches/apply_mbm_patches.sh
+
+ Compile the System and RAM Disk Images:
+
+   # cd <path to mydroid>
+   # make
