@@ -25,15 +25,15 @@
     <bool name="config_voice_capable">false</bool>
 
     <!-- This device does not allow sms service. -->
-    <bool name="config_sms_capable">false</bool>
+    <bool name="config_sms_capable">true</bool>
 
     <bool name="config_showNavigationBar">false</bool>
 
-    <string name="config_datause_iface">wlan0</string>
+    <string name="config_datause_iface">wwan0</string>
 
     <bool name="config_batterySdCardAccessibility">true</bool>
 
-    <bool name="config_sf_limitedAlpha">true</bool>
+    <bool name="config_sf_limitedAlpha">false</bool>
  
    <bool name="config_allowAllRotations">true</bool>
    <integer name="config_lidOpenRotation">-1</integer>

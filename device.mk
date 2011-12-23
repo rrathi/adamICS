@@ -40,12 +40,7 @@ PRODUCT_COPY_FILES := \
     device/notionink/adam/files/init.harmony.rc:root/init.harmony.rc \
     device/notionink/adam/files/ueventd.harmony.rc:root/ueventd.harmony.rc \
     device/notionink/adam/files/nvram.txt:system/etc/wifi/nvram.txt
-    
-# APK
-#PRODUCT_COPY_FILES += \
-#    device/notionink/adam/app/Quadrant.apk:system/app/Quadrant.apk \
-#    device/notionink/adam/app/.root_browser:system/etc/.root_browser \
-#    device/notionink/adam/app/RootBrowserFree.apk:system/app/RootBrowserFree.apk 
+
 
 # Modules
 PRODUCT_COPY_FILES += \
@@ -135,9 +130,7 @@ endif
 
 $(call inherit-product, frameworks/base/build/tablet-dalvik-heap.mk)
 
-$(call inherit-product-if-exists, vendor/notionink/adam/device-vendor.mk)
-
-BOARD_WLAN_DEVICE_REV := bcm4329
-WIFI_BAND             := 802_11_ABG
-
-$(call inherit-product-if-exists, hardware/broadcom/wlan/bcmdhd/firmware/bcm4329/device-bcm.mk)
+# Make it optional to include vendor stuff..Just to be nice ;)
+ifneq ($(TARGET_IGNORE_VENDOR),yes)
+$(call inherit-product, vendor/notionink/adam/device-vendor.mk)
+endif

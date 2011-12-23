@@ -10,6 +10,7 @@
 ## <sysfs_path> - List of sysfs paths to source devices
 ######################
 
-# Configuration of Picasso
-dev_mount external_sdcard /mnt/external_sd auto /devices/platform/sdhci-tegra.2/mmc_host/mmc1
-dev_mount external_usb_disk /mnt/usb_storage auto /devices/platform/tegra-ehci.2/usb1
+# Configuration of Adam
+dev_mount emmc /mnt/emmc auto /devices/platform/sdhci-tegra.3/mmc_host/mmc1
+dev_mount sdcard /mnt/sdcard auto /devices/platform/sdhci-tegra.2/mmc_host/mmc2
+dev_mount usbdisk /mnt/usbdisk auto /devices/platform/tegra-ehci.2/usb1/1-1/1-1:1.0

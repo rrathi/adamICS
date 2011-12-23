@@ -6,4 +6,5 @@
 /dev/tegra_camera	0660	media	camera
 /dev/spdif*	0660	system	audio
 /dev/ttyACM*    0660    radio   system
+/dev/ttyHS*    0660    radio   system
 /dev/tegra_dc* 0660 system system

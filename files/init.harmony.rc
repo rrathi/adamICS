@@ -5,6 +5,10 @@ on early-init
     mkdir /mnt/sdcard 0000 system system
     # for backwards compatibility
     symlink /mnt/sdcard /sdcard
+    mkdir /mnt/emmc 0000 system system
+    symlink /mnt/emmc /emmc
+    mkdir /mnt/usbdisk 0000 system system
+    symlink /mnt/usbdisk /usbdisk
     mkdir /mnt/external1 0000 system system
     mkdir /mnt/external2 0000 system system
 
@@ -14,8 +18,8 @@ on fs
     mount yaffs2 mtd@system /system ro remount
     setprop ro.crypto.tmpfs_options size=128m,mode=0771,uid=1000,gid=1000
     mount ext4 /dev/block/mmcblk0p2 /data wait noatime nosuid nodev
-    mount vfat /dev/block/mmcblk0p1 /sdcard wait noatime nosuid nodev
     mount yaffs2 mtd@cache /cache wait noatime nosuid nodev
+#    mount vfat /dev/block/mmcblk0p1 /sdcard wait noatime nosuid nodev
 
 on post-fs-data
     mkdir /data/misc/wifi 0770 wifi wifi
@@ -107,7 +111,7 @@ service iprenew_wlan0 /system/bin/dhcpcd -n
 
 #BCM
 service hciattach /system/bin/brcm_patchram_plus --enable_hci \
-    --baudrate 3000000 --use_baudrate_for_download --patchram /system/etc/firmware/bcm4329.hcd --tosleep 50000 \
+    --baudrate 2700000 --use_baudrate_for_download --patchram /system/etc/firmware/bcm4329.hcd --tosleep 50000 \
     --i2s=1,1,0,1 --enable_lpm /dev/ttyHS2
     class main
     user root
