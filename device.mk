@@ -31,9 +31,9 @@ DEVICE_PACKAGE_OVERLAYS := device/notionink/adam/overlay
 # currently contain all of the bitmaps at xhdpi density so
 # we do this little trick to fall back to the hdpi version
 # if the xhdpi doesn't exist.
-#PRODUCT_AAPT_CONFIG := normal hdpi xhdpi xlarge sw600dp sw720dp
-#PRODUCT_AAPT_PREF_CONFIG := xlarge
-#PRODUCT_AAPT_PREF_CONFIG := 
+PRODUCT_AAPT_CONFIG := normal mdpi
+PRODUCT_AAPT_PREF_CONFIG := mdpi
+
 
 PRODUCT_COPY_FILES := \
     $(LOCAL_KERNEL):kernel \
