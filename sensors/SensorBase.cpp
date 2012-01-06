@@ -21,6 +21,7 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <sys/select.h>
+#include <string.h>
 
 #include <cutils/log.h>
 
@@ -141,6 +142,40 @@ int SensorBase::openInput(const char* inputName) {
                 if (err <= 0) return err;
 
                 *val = atoi(buffer);
+                return 1;
+        }
+
+int SensorBase::readCSVFromFile(const char *path, int vals[], int inCount)
+        {
+                char buffer[50] = {0};
+                int data_fd;
+                int err;
+		int count = 0;
+		char* tokenizer = NULL;                
+		/* The opening of the file handle is placed here
+                 * as work around that if it is opened in the constructor
+                 * read on the file handle fails.
+                 */
+                data_fd = open(path, O_RDONLY);
+                if (data_fd < 0)
+                        return 0;
+
+                err = read(data_fd, buffer, sizeof(buffer));
+                close(data_fd);
+
+                if (err <= 0) return err;
+		
+		tokenizer = strtok(buffer, ",");
+
+		while (count < inCount && tokenizer != NULL) {
+			vals[count] = atoi(tokenizer);
+			tokenizer = strtok(NULL, ",");
+			count++;
+		} 
+		if (count != inCount) {
+			return -1;
+		}
+
                 return 1;
         }
 

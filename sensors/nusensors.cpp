@@ -48,7 +48,7 @@ private:
     enum {
 	acceleration    = 0,
 	light           = 1,
-//	magnetic		= 2,
+	magnetic		= 2,
         numSensorDrivers,
         numFds,
     };
@@ -63,8 +63,8 @@ private:
         switch (handle) {
             case ID_A:
                 return acceleration;
-/*            case ID_M:
-                return magnetic;*/
+            case ID_M:
+                return magnetic;
             case ID_L:
                 return light;
         }
@@ -86,10 +86,10 @@ sensors_poll_context_t::sensors_poll_context_t()
     mPollFds[light].events = POLLIN;
     mPollFds[light].revents = 0;
 
-/*    mSensors[magnetic] = new MagneticSensor();
+    mSensors[magnetic] = new MagneticSensor();
     mPollFds[magnetic].fd = mSensors[magnetic]->getFd();
     mPollFds[magnetic].events = POLLIN;
-    mPollFds[magnetic].revents = 0;*/
+    mPollFds[magnetic].revents = 0;
 
     int wakeFds[2];
     int result = pipe(wakeFds);

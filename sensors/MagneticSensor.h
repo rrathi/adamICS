@@ -17,6 +17,7 @@
 #ifndef ANDROID_MAGNETIC_SENSOR_H
 #define ANDROID_MAGNETIC_SENSOR_H
 
+#define MAGNETIC_CALIBRATION_FILE "/data/misc/magnetic_calibration"
 #include <stdint.h>
 #include <errno.h>
 #include <sys/cdefs.h>
@@ -44,15 +45,19 @@ public:
     virtual int setDelay(int32_t handle, int64_t ns);
     virtual int enable(int32_t handle, int enabled);
     virtual int readEvents(sensors_event_t* data, int count);
+    virtual bool hasPendingEvents() const;
     void processEvent(int code, int value);
 
 private:
+    int magCalibration[3];
     int update_delay();
     uint32_t mEnabled;
     uint32_t mPendingMask;
     InputEventCircularReader mInputReader;
     sensors_event_t mPendingEvents[numSensors];
     uint64_t mDelays[numSensors];
+    int64_t mMinDelay;
+    int64_t mLastUpdate;
 };
 
 /*****************************************************************************/

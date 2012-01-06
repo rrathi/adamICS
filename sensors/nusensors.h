@@ -51,7 +51,7 @@ int init_nusensors(hw_module_t const* module, hw_device_t** device);
 
 /*****************************************************************************/
 
-#define MAGNETIC_DEVICE_NAME        "/dev/akm8975_aot"
+#define MAGNETIC_DEVICE_NAME        "/sys/devices/virtual/magnetic/mmc31xx/read_mag"
 #define ACCELEROMETER_DEVICE_NAME   "/dev/kxtf9"
 #define LIGHTING_DEVICE_NAME        "/sys/bus/iio/devices/device0/lux"
 

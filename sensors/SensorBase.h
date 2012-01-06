@@ -45,6 +45,7 @@ protected:
     int open_device();
     int close_device();
     int readIntFromFile(const char *path, unsigned int *val);
+    int readCSVFromFile(const char *path, int vals[], int inCount);
 
 public:
             SensorBase(
