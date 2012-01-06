@@ -34,6 +34,8 @@ DEVICE_PACKAGE_OVERLAYS := device/notionink/adam/overlay
 PRODUCT_AAPT_CONFIG := normal mdpi
 PRODUCT_AAPT_PREF_CONFIG := mdpi
 
+# uses mdpi artwork where available
+PRODUCT_LOCALES += mdpi
 
 PRODUCT_COPY_FILES := \
     $(LOCAL_KERNEL):kernel \
@@ -41,6 +43,11 @@ PRODUCT_COPY_FILES := \
     device/notionink/adam/files/ueventd.harmony.rc:root/ueventd.harmony.rc \
     device/notionink/adam/files/nvram.txt:system/etc/wifi/nvram.txt
 
+# APK
+#PRODUCT_COPY_FILES += \
+#    device/notionink/adam/app/Quadrant.apk:system/app/Quadrant.apk \
+#    device/notionink/adam/app/.root_browser:system/etc/.root_browser \
+#    device/notionink/adam/app/RootBrowserFree.apk:system/app/RootBrowserFree.apk 
 
 # Modules
 PRODUCT_COPY_FILES += \
@@ -105,6 +112,15 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PROPERTY_OVERRIDES += \
 	ro.opengles.version=131072
 
+#Set default.prop properties for root + adb
+PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
+	ro.secure=0 \
+	persist.service.adb.enable=1
+
+ADDITIONAL_DEFAULT_PROPERTIES += \
+	ro.secure=0 \
+	persist.service.adb.enable=1
+
 PRODUCT_CHARACTERISTICS := tablet
 
 PRODUCT_TAGS += dalvik.gc.type-precise
@@ -116,9 +132,6 @@ PRODUCT_PACKAGES += \
 # Filesystem management tools
 PRODUCT_PACKAGES += \
 	setup_fs
-
-DEVICE_PACKAGE_OVERLAYS := \
-    device/notionink/adam/overlay
 
 # for bugmailer
 ifneq ($(TARGET_BUILD_VARIANT),user)
