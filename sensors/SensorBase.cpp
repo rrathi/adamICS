@@ -158,7 +158,7 @@ int SensorBase::readCSVFromFile(const char *path, int vals[], int inCount)
                  */
                 data_fd = open(path, O_RDONLY);
                 if (data_fd < 0)
-                        return 0;
+                        return -1;
 
                 err = read(data_fd, buffer, sizeof(buffer));
                 close(data_fd);
