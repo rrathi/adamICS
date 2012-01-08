@@ -1,10 +1,12 @@
-/dev/knvmap	0660	system	system
-/dev/nvmap	0666	system	system
-/dev/tegra_avp	0660	media	media
-/dev/tegra_rpc	0660	media	media
-/dev/tegra_sema	0660	media	media
-/dev/tegra_camera	0660	media	camera
-/dev/spdif*	0660	system	audio
-/dev/ttyACM*    0660    radio   system
-/dev/ttyHS*    0660    radio   system
-/dev/tegra_dc* 0660 system system
+/dev/knvmap   0660   system   system
+/dev/nvmap   0666   system   system
+/dev/tegra_avp   0660   media   media
+/dev/tegra_rpc   0660   media   media
+/dev/tegra_sema   0660   media   media
+/dev/tegra_camera   0660   media   camera
+/dev/spdif*   0660   system   audio
+/dev/ttyACM*   0660   radio   system
+/dev/ttyHS*   0660   radio   system
+/dev/tegra_dc*   0660   system   system
+/sys/devices/platform/bcm4329_rfkill/rfkill/rfkill*   state   0666   radio   system
+/sys/devices/platform/tegra_uart.2/tty/ttyHS2/hci0/rfkill*   state   0666   radio   system
