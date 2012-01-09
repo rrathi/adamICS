@@ -83,6 +83,7 @@ PRODUCT_PACKAGES += \
 
 PRODUCT_PACKAGES += \
         audio.a2dp.default \
+	audio.primary.harmony \
         libaudioutils
 
 PRODUCT_PACKAGES += \
