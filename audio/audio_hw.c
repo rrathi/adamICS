@@ -43,9 +43,10 @@
 
 #define MIXER_HEADSET_PLAYBACK_VOLUME       "Headphone Playback Volume"
 #define MIXER_SPEAKER_PLAYBACK_VOLUME       "Auxout Playback Volume"
+#define MIXER_AUXOUT_ENABLE                 "Auxout Playback Switch"
 #define MIXER_MIC_CAPTURE_VOLUME            "Mic1 Capture Volume" /*ok*/
 #define MIXER_HEADSET_PLAYBACK_SWITCH       "Headphone Playback Switch"
-#define MIXER_SPEAKER_PLAYBACK_SWITCH       "Auxout Playback Switch"
+#define MIXER_SPEAKER_PLAYBACK_SWITCH       "Int Spk Switch"
 #define MIXER_MIC_CAPTURE_SWITCH            "Int Mic Switch"
 
 #define MIXER_HPL_OUTMUX                    "Left Headphone Mux"
@@ -184,6 +185,11 @@ struct route_setting defaults[] = {
         .intval = 1,
     },
     {
+        .ctl_name = MIXER_AUXOUT_ENABLE,
+        .intval = 1,
+    },
+
+    {
         .ctl_name = NULL,
     },
 
@@ -192,13 +198,14 @@ struct route_setting defaults[] = {
 
 struct mixer_ctls
 {
-	struct mixer_ctl *mic_volume;
+	
 	struct mixer_ctl *pcm_volume;
     struct mixer_ctl *headset_volume;
     struct mixer_ctl *speaker_volume;
-	struct mixer_ctl *mic_switch;
+	struct mixer_ctl *mic_volume;
     struct mixer_ctl *headset_switch;
     struct mixer_ctl *speaker_switch;
+	struct mixer_ctl *mic_switch;
     struct mixer_ctl *LHPMux;
     struct mixer_ctl *RHPMux;
     struct mixer_ctl *SpkMux;
