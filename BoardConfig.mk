@@ -48,7 +48,6 @@ TARGET_NO_RADIOIMAGE := true
 TARGET_BOARD_PLATFORM := tegra
 TARGET_BOOTLOADER_BOARD_NAME := harmony
 #TARGET_BOARD_INFO_FILE := device/notionink/adam/board-info.txt
-
 BOARD_EGL_CFG := device/notionink/adam/files/egl.cfg
 
 #BOARD_USES_HGL := true

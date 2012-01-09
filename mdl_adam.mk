@@ -1,5 +1,4 @@
-#
-# Copyright (C) 2011 The Android Open-Source Project
+# Copyright (C) 2011 The Android Open Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-PRODUCT_MAKEFILES := \
-    $(LOCAL_DIR)/full_adam.mk \
-    $(LOCAL_DIR)/mdl_adam.mk
+
+# Inherit from ADAM device
+$(call inherit-product, device/notionink/adam/full_adam.mk)
+# Inherit from DEADCREME vendor
+$(call inherit-product, vendor/deadcreme/deadcreme.mk)
+
+PRODUCT_PACKAGES += \
+    RootBrowserFree \
+    Superuser \
+    su
+
+PRODUCT_NAME := mdl_adam
+PRODUCT_DEVICE := adam
+PRODUCT_BRAND := NotionInk
+PRODUCT_MODEL := BLAHBLAHTEST
