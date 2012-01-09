@@ -111,13 +111,14 @@ service iprenew_wlan0 /system/bin/dhcpcd -n
 
 #BCM
 service hciattach /system/bin/brcm_patchram_plus --enable_hci \
-    --baudrate 2700000 --use_baudrate_for_download --patchram /system/etc/firmware/bcm4329.hcd --tosleep 50000 \
+    --baudrate 921600 --patchram /system/etc/firmware/bcm4329.hcd --tosleep 50000 \
     --i2s=1,1,0,1 --enable_lpm /dev/ttyHS2
     class main
     user root
     group system bluetooth net_bt_admin misc
     oneshot
     disabled
+
 #service hciattach /system/bin/brcm_patchram_plus --enable_hci \
 #    --baudrate 2700000 --patchram /system/lib/hw/wlan/bcm4329.hcd --pcm_role slave \
 #    --enable_lpm /dev/ttyHS2
