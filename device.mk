@@ -127,7 +127,7 @@ PRODUCT_TAGS += dalvik.gc.type-precise
 
 PRODUCT_PACKAGES += \
 	librs_jni \
-	com.android.future.usb.accessory
+	com.android.future.usb.accessory 
 
 # Filesystem management tools
 PRODUCT_PACKAGES += \
