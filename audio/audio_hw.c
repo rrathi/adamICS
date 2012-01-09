@@ -50,7 +50,6 @@
 
 #define MIXER_HPL_OUTMUX                    "Left Headphone Mux"
 #define MIXER_HPR_OUTMUX                    "Right Headphone Mux"
-#define MIXER_PCM_VOL                       "PCM Playback Volume"
 #define MIXER_AUX_OUTMUX                    "AuxOut Mux"
 #define MIXER_HP_ENABLE_DAC                 "HP Mix DAC2HP Playback Switch"
 #define MIXER_SPK_ENABLE_DAC                "Speaker Mix DAC2SPK Playback Switch"
@@ -138,7 +137,7 @@ struct route_setting defaults[] = {
     /* general */
     {
         .ctl_name = MIXER_PCM_PLAYBACK_VOLUME,
-        .intval = PERC_TO_PCM_VOLUME(1),
+        .intval = 20,
     },
     {
         .ctl_name = MIXER_HEADSET_PLAYBACK_VOLUME,
@@ -171,10 +170,6 @@ struct route_setting defaults[] = {
     {
         .ctl_name = MIXER_HPR_OUTMUX,
         .strval = MIXER_HP_RIGHT,
-    },
-    {
-        .ctl_name = MIXER_PCM_VOL,
-        .intval = 20,
     },
     {
         .ctl_name = MIXER_AUX_OUTMUX,
