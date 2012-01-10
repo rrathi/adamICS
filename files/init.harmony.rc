@@ -36,6 +36,9 @@ on post-fs-data
 
 
 on boot
+# PQi Permissions
+    chmod 0666 /sys/class/gpio/gpio27/value 
+
 # bluetooth permissions
     chmod 0660 /dev/ttyHS2
     chown bluetooth bluetooth /dev/ttyHS2
