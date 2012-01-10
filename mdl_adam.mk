@@ -15,7 +15,7 @@
 # Inherit from ADAM device
 $(call inherit-product, device/notionink/adam/full_adam.mk)
 # Inherit from DEADCREME vendor
-$(call inherit-product, vendor/deadcreme/deadcreme.mk)
+$(call inherit-product-if-exists, vendor/deadcreme/deadcreme.mk)
 
 PRODUCT_PACKAGES += \
     RootBrowserFree \
