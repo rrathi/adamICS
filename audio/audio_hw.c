@@ -45,7 +45,8 @@
 #define MIXER_SPEAKER_PLAYBACK_VOLUME       "Auxout Playback Volume"
 #define MIXER_AUXOUT_ENABLE                 "Auxout Playback Switch"
 #define MIXER_MIC_CAPTURE_VOLUME            "Mic1 Capture Volume" /*ok*/
-#define MIXER_HEADSET_PLAYBACK_SWITCH       "Headphone Playback Switch"
+#define MIXER_HEADSET_OUTENABLE             "Headphone Playback Switch"
+#define MIXER_HEADSET_PLAYBACK_SWITCH       "Headphone Jack Switch"
 #define MIXER_SPEAKER_PLAYBACK_SWITCH       "Int Spk Switch"
 #define MIXER_MIC_CAPTURE_SWITCH            "Int Mic Switch"
 
@@ -162,6 +163,10 @@ struct route_setting defaults[] = {
     },
     {
         .ctl_name = MIXER_MIC_CAPTURE_SWITCH,
+        .intval = 1,
+    },
+    {
+	.ctl_name = MIXER_HEADSET_OUTENABLE,
         .intval = 1,
     },
     {
