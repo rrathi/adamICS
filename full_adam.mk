@@ -16,6 +16,7 @@
 PRODUCT_PACKAGES := \
     Camera \
     SpareParts \
+    PQiToggle \
     Development
 
 $(call inherit-product, $(SRC_TARGET_DIR)/product/full_base.mk)
