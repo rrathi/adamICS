@@ -27,27 +27,18 @@ endif
 
 DEVICE_PACKAGE_OVERLAYS := device/notionink/adam/overlay
 
-# This device is xhdpi.  However the platform doesn't
-# currently contain all of the bitmaps at xhdpi density so
-# we do this little trick to fall back to the hdpi version
-# if the xhdpi doesn't exist.
+# uses mdpi artwork where available
 PRODUCT_AAPT_CONFIG := normal mdpi
 PRODUCT_AAPT_PREF_CONFIG := mdpi
-
-# uses mdpi artwork where available
 PRODUCT_LOCALES += mdpi
 
+
+# Adam/Harmony Configs
 PRODUCT_COPY_FILES := \
     $(LOCAL_KERNEL):kernel \
     device/notionink/adam/files/init.harmony.rc:root/init.harmony.rc \
     device/notionink/adam/files/ueventd.harmony.rc:root/ueventd.harmony.rc \
     device/notionink/adam/files/nvram.txt:system/etc/wifi/nvram.txt
-
-# APK
-#PRODUCT_COPY_FILES += \
-#    device/notionink/adam/app/Quadrant.apk:system/app/Quadrant.apk \
-#    device/notionink/adam/app/.root_browser:system/etc/.root_browser \
-#    device/notionink/adam/app/RootBrowserFree.apk:system/app/RootBrowserFree.apk 
 
 # Modules
 PRODUCT_COPY_FILES += \
@@ -81,18 +72,20 @@ PRODUCT_PACKAGES += \
         LiveWallpapersPicker \
         VisualizationWallpapers
 
+#Audio
 PRODUCT_PACKAGES += \
         audio.a2dp.default \
 	audio.primary.harmony \
         libaudioutils
 
+# Harmony Hardware
 PRODUCT_PACKAGES += \
 	sensors.harmony \
 	lights.harmony \
 	gps.harmony \
 	libmbm-ril
         
-# These are the hardware-specific features
+# These are the hardware-specific feature permissions
 PRODUCT_COPY_FILES += \
     frameworks/base/data/etc/tablet_core_hardware.xml:system/etc/permissions/tablet_core_hardware.xml \
     frameworks/base/data/etc/android.hardware.camera.xml:system/etc/permissions/android.hardware.camera.xml \

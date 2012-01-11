@@ -50,27 +50,15 @@ TARGET_BOOTLOADER_BOARD_NAME := harmony
 #TARGET_BOARD_INFO_FILE := device/notionink/adam/board-info.txt
 BOARD_EGL_CFG := device/notionink/adam/files/egl.cfg
 
-#BOARD_USES_HGL := true
-#BOARD_USES_OVERLAY := true
+BOARD_USES_OVERLAY := true
 USE_OPENGL_RENDERER := true
 
-#TARGET_RECOVERY_PIXEL_FORMAT := "BGRA_8888"
-#TARGET_RECOVERY_UI_LIB := librecovery_ui_ventana
-
-# device-specific extensions to the updater binary
-#TARGET_RECOVERY_UPDATER_LIBS += librecovery_updater_ventana
-#TARGET_RELEASETOOLS_EXTENSIONS := device/notionink/adam
-#TARGET_USERIMAGES_USE_EXT4 := true
 BOARD_BOOTIMAGE_PARTITION_SIZE := 0x01000000
-#BOARD_RECOVERYIMAGE_PARTITION_SIZE := 0x01000000
 BOARD_SYSTEMIMAGE_PARTITION_SIZE := 0x0c800000
 BOARD_USERDATAIMAGE_PARTITION_SIZE := 0x105c0000
 BOARD_FLASH_BLOCK_SIZE := 131072
 
 TARGET_PREBUILT_KERNEL := device/notionink/adam/kernel
-
-#TARGET_PROVIDES_INIT_RC := true
-#TARGET_USERIMAGES_SPARSE_EXT_DISABLED := true
 
 # Wifi related defines
 WPA_SUPPLICANT_VERSION := VER_0_8_X
@@ -93,6 +81,5 @@ WIFI_DRIVER_MODULE_ARG      := "firmware_path=/system/vendor/firmware/fw_bcm4329
 BOARD_HAVE_BLUETOOTH := true
 BOARD_HAVE_BLUETOOTH_BCM := true
 
-#BOARD_LIB_DUMPSTATE := libdumpstate.ventana
 PRODUCT_CHARACTERISTICS := tablet
 BOARD_USES_SECURE_SERVICES := true
