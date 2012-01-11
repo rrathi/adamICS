@@ -43,12 +43,6 @@ PRODUCT_COPY_FILES := \
     device/notionink/adam/files/ueventd.harmony.rc:root/ueventd.harmony.rc \
     device/notionink/adam/files/nvram.txt:system/etc/wifi/nvram.txt
 
-# APK
-#PRODUCT_COPY_FILES += \
-#    device/notionink/adam/app/Quadrant.apk:system/app/Quadrant.apk \
-#    device/notionink/adam/app/.root_browser:system/etc/.root_browser \
-#    device/notionink/adam/app/RootBrowserFree.apk:system/app/RootBrowserFree.apk 
-
 # Modules
 PRODUCT_COPY_FILES += \
     device/notionink/adam/modules/scsi_wait_scan.ko:system/lib/modules/scsi_wait_scan.ko \
