@@ -25,7 +25,7 @@ TARGET_USES_OLD_LIBSENSORS_HAL := false
 # Use the non-open-source parts, if they're present
 -include vendor/notionink/adam/BoardConfigVendor.mk
 
-TARGET_NO_RECOVERY := true
+#TARGET_NO_RECOVERY := true
 TARGET_NO_BOOTLOADER := true
 TARGET_CPU_ABI := armeabi-v7a
 TARGET_CPU_ABI2 := armeabi
