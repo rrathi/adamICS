@@ -18,7 +18,6 @@ $(call inherit-product, device/notionink/adam/full_adam.mk)
 $(call inherit-product-if-exists, vendor/deadcreme/deadcreme.mk)
 
 PRODUCT_PACKAGES += \
-    RootBrowserFree \
     Superuser \
     su
 

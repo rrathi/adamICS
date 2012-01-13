@@ -136,8 +136,4 @@ ifneq ($(TARGET_BUILD_VARIANT),user)
 endif
 
 $(call inherit-product, frameworks/base/build/tablet-dalvik-heap.mk)
-
-# Make it optional to include vendor stuff..Just to be nice ;)
-ifneq ($(TARGET_IGNORE_VENDOR),yes)
 $(call inherit-product, vendor/notionink/adam/device-vendor.mk)
-endif
