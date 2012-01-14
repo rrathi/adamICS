@@ -7,8 +7,6 @@ on early-init
     symlink /mnt/sdcard /sdcard
     mkdir /mnt/emmc 0000 system system
     symlink /mnt/emmc /emmc
-    mkdir /mnt/usbdisk 0000 system system
-    symlink /mnt/usbdisk /usbdisk
     mkdir /mnt/external1 0000 system system
     mkdir /mnt/external2 0000 system system
 
