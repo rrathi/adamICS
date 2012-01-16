@@ -58,7 +58,7 @@
 
 #define MIXER_HP_LEFT                       "HP Left Mix"
 #define MIXER_HP_RIGHT                      "HP Right Mix"
-#define MIXER_SPK                           "Speaker Mix"
+#define MIXER_SPK                           "HPOut Mix"
 
 
 
