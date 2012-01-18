@@ -67,8 +67,8 @@
 
 /* ALSA ports for card0 */
 #define PORT_MM    0 /* CODEC port */
-//#define PORT_VOICE 1 /* Bluetooth/3G port */
-#define PORT_SPDIF 1 /* SPDIF (HDMI) port */
+#define PORT_VOICE 1 /* Bluetooth/3G port */
+#define PORT_SPDIF 2 /* SPDIF (HDMI) port */
 
 /* Minimum granularity - Arbitrary but small value */
 #define CODEC_BASE_FRAME_COUNT 32
@@ -391,7 +391,7 @@ static int start_output_stream(struct adam_stream_out *out)
     out->config.rate = MM_FULL_POWER_SAMPLING_RATE;
     if(adev->devices & AUDIO_DEVICE_OUT_AUX_DIGITAL) {
         port = PORT_SPDIF;
-        out->config.rate = MM_LOW_POWER_SAMPLING_RATE;
+        //out->config.rate = MM_LOW_POWER_SAMPLING_RATE;
     }
 	
     /* default to low power: will be corrected in out_write if necessary before first write to
