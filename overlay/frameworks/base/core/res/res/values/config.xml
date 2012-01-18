@@ -117,13 +117,6 @@
         <item>"bnep\\d"</item>
     </string-array>
 
-<!-- Not sure if config_tether_upstream_regexs is used in ICS or it is replaced by config_tether_upstream_types -->
-    <string-array translatable="false" name="config_tether_upstream_regexs">
-    	<item>"wlan0"</item>
-    	<item>"wwan\\d"</item>
-    </string-array>
-
-
    <integer-array translatable="false" name="config_tether_upstream_types">
         <item>0</item>
         <item>1</item>
@@ -167,11 +160,5 @@
         <item>"0,1"</item>
         <item>"7,1"</item>
     </string-array>
-
-    <!-- Enable the screen-on animation -->
-    <bool name="config_enableScreenOnAnimation">false</bool>
-
-    <!-- Enable the screen-off animation -->
-    <bool name="config_enableScreenOffAnimation">true</bool>
 
 </resources>
