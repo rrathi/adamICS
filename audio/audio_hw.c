@@ -67,8 +67,8 @@
 
 /* ALSA ports for card0 */
 #define PORT_MM    0 /* CODEC port */
-#define PORT_VOICE 1 /* Bluetooth/3G port */
-#define PORT_SPDIF 2 /* SPDIF (HDMI) port */
+//#define PORT_VOICE 1 /* Bluetooth/3G port */
+#define PORT_SPDIF 1 /* SPDIF (HDMI) port */
 
 /* Minimum granularity - Arbitrary but small value */
 #define CODEC_BASE_FRAME_COUNT 32
