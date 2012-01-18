@@ -1,0 +1,6 @@
+#
+# system.prop for adam 
+#
+
+rild.libpath=/system/lib/libmbm-ril.so
+rild.libargs=-d /dev/ttyACM0 -i wwan0

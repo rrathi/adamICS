@@ -5,7 +5,7 @@
 /dev/tegra_sema   0660   media   media
 /dev/tegra_camera   0660   media   camera
 /dev/spdif*   0660   system   audio
-/dev/ttyACM*   0660   radio   system
+/dev/ttyACM*   0777   radio   system
 /dev/ttyHS*   0660   radio   system
 /dev/tegra_dc*   0660   system   system
 /sys/devices/platform/bcm4329_rfkill/rfkill/rfkill*   state   0666   radio   system
