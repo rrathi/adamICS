@@ -43,6 +43,7 @@ PRODUCT_COPY_FILES := \
 # Modules
 PRODUCT_COPY_FILES += \
     device/notionink/adam/modules/scsi_wait_scan.ko:system/lib/modules/scsi_wait_scan.ko \
+    device/notionink/adam/modules/tun.ko:system/lib/modules/tun.ko \
     device/notionink/adam/modules/bcm4329.ko:system/lib/modules/bcm4329.ko
 
 # Bluetooth
