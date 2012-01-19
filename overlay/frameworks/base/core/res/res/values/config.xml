@@ -29,7 +29,7 @@
 
     <bool name="config_showNavigationBar">false</bool>
 
-    <string name="config_datause_iface">wwan0</string>
+    <string name="config_datause_iface">rmnet0</string>
 
     <bool name="config_batterySdCardAccessibility">true</bool>
 
