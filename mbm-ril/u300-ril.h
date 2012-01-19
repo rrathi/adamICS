@@ -24,9 +24,9 @@
 #ifndef U300_RIL_H
 #define U300_RIL_H 1
 
-void getScreenStateLock();
-int getScreenState();
-void releaseScreenStateLock();
+void getScreenStateLock(void);
+int getScreenState(void);
+void releaseScreenStateLock(void);
 
 extern char* ril_iface;
 extern const struct RIL_Env *s_rilenv;

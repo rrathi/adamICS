@@ -1,5 +1,26 @@
+/* ST-Ericsson U300 RIL
+**
+** Copyright (C) Ericsson AB 2011
+** Copyright (C) ST-Ericsson AB 2008-2010
+** Copyright 2006, The Android Open Source Project
+**
+** Licensed under the Apache License, Version 2.0 (the "License");
+** you may not use this file except in compliance with the License.
+** You may obtain a copy of the License at
+**
+**     http://www.apache.org/licenses/LICENSE-2.0
+**
+** Unless required by applicable law or agreed to in writing, software
+** distributed under the License is distributed on an "AS IS" BASIS,
+** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+** See the License for the specific language governing permissions and
+** limitations under the License.
+**
+** Based on reference-ril by The Android Open Source Project.
+**
+*/
+
 #include <telephony/ril.h>
-#include <assert.h>
 #include "atchannel.h"
 #include "at_tok.h"
 
@@ -82,9 +103,7 @@ void requestDeviceIdentity(void *data, size_t datalen, RIL_Token t)
     response[2] = "";
     response[3] = "";
 
-    RIL_onRequestComplete(t, RIL_E_SUCCESS,
-                          &response,
-                          sizeof(response));
+    RIL_onRequestComplete(t, RIL_E_SUCCESS, &response, sizeof(response));
 
     free(svn);
 
@@ -150,9 +169,7 @@ void requestGetIMEISV(void *data, size_t datalen, RIL_Token t)
 
     at_response_free(atresponse);
 
-    RIL_onRequestComplete(t, RIL_E_SUCCESS,
-                          svn,
-                          sizeof(char *));
+    RIL_onRequestComplete(t, RIL_E_SUCCESS, svn, sizeof(char *));
 }
 
 /**
@@ -184,12 +201,13 @@ void requestBasebandVersion(void *data, size_t datalen, RIL_Token t)
 }
 
 /** Do post- SIM ready initialization. */
-void onSIMReady()
+void onSIMReady(void *p)
 {
     int err = 0;
+    (void) p;
 
     /* Check if ME is ready to set preferred message storage */
-    checkMessageStorageReady();
+    checkMessageStorageReady(NULL);
 
     /* Select message service */
     at_send_command("AT+CSMS=0");
@@ -215,15 +233,15 @@ void onSIMReady()
     */
     at_send_command("AT+CNMI=2,2,2,1,0");
 
-
     /* Subscribe to network registration events.
      *  n = 2 - Enable network registration and location information
      *          unsolicited result code +CREG: <stat>[,<lac>,<ci>]
      */
     err = at_send_command("AT+CREG=2");
-    if (err != AT_NOERROR)
+    if (err != AT_NOERROR) {
         /* Some handsets -- in tethered mode -- don't support CREG=2. */
         at_send_command("AT+CREG=1");
+    }
 
     /* Subscribe to network status events */
     at_send_command("AT*E2REG=1");
@@ -383,7 +401,7 @@ error:
  * this we could get CME ERROR 272 (wwan
  * disabled on host) when sending CFUN=1
  */
-int retryRadioPower()
+int retryRadioPower(void)
 {
     int err;
     int i;
@@ -412,7 +430,11 @@ void requestRadioPower(void *data, size_t datalen, RIL_Token t)
     int err;
     int restricted;
 
-    assert(datalen >= sizeof(int *));
+    if (datalen < sizeof(int *)) {
+        LOGE("%s() bad data length!", __func__);
+        goto error;
+    }
+
     onOff = ((int *) data)[0];
 
     if (onOff == 0 && sState != RADIO_STATE_OFF) {
@@ -428,9 +450,8 @@ void requestRadioPower(void *data, size_t datalen, RIL_Token t)
             err = at_send_command("AT+CFUN=0");
             if (err != AT_NOERROR)
                 goto error;
-        } else {
+        } else
             setRadioState(RADIO_STATE_OFF);
-        }
     } else if (onOff > 0 && sState == RADIO_STATE_OFF) {
         err = at_send_command("AT+CFUN=%d", getPreferredNetworkType());
         if (err != AT_NOERROR) {
@@ -459,7 +480,7 @@ error:
  * Synchronous call from the RIL to us to return current radio state.
  * RADIO_STATE_UNAVAILABLE should be the initial state.
  */
-RIL_RadioState getRadioState()
+RIL_RadioState getRadioState(void)
 {
     return sState;
 }

@@ -23,7 +23,6 @@
 
 #include <telephony/ril.h>
 #include <stdio.h>
-#include <assert.h>
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
@@ -58,7 +57,7 @@
 #define LOG_TAG "RIL"
 #include <utils/Log.h>
 
-#define RIL_VERSION_STRING "MBM u300-ril 3.3.0.1"
+#define RIL_VERSION_STRING "MBM u300-ril 4.0.0.0-alpha"
 
 #define MAX_AT_RESPONSE 0x1000
 
@@ -192,18 +191,16 @@ void enqueueRILEvent(int isPrio, void (*callback) (void *param),
     if (!s_requestQueuePrio.enabled ||
         (isPrio == RIL_EVENT_QUEUE_NORMAL || isPrio == RIL_EVENT_QUEUE_ALL)) {
         q = &s_requestQueue;
-    } else if (isPrio == RIL_EVENT_QUEUE_PRIO) {
+    } else if (isPrio == RIL_EVENT_QUEUE_PRIO)
         q = &s_requestQueuePrio;
-    }
 
 again:
     if ((err = pthread_mutex_lock(&q->queueMutex)) != 0)
         LOGE("%s() failed to take queue mutex: %s!", __func__, strerror(err));
 
-
-    if (q->eventList == NULL) {
+    if (q->eventList == NULL)
         q->eventList = e;
-    } else {
+    else {
         if (timespec_cmp(q->eventList->abstime, e->abstime, > )) {
             e->next = q->eventList;
             q->eventList->prev = e;
@@ -244,8 +241,6 @@ again:
 
         goto again;
     }
-
-    return;
 }
 
 /**
@@ -286,11 +281,10 @@ static void requestScreenState(void *data, size_t datalen, RIL_Token t)
     (void) datalen;
     int err, screenState;
 
-    assert(datalen >= sizeof(int *));
+    getScreenStateLock();
 
-    if ((err = pthread_mutex_lock(&s_screen_state_mutex)) != 0)
-        LOGE("%s() failed to take screen state mutex: %s",
-            __func__,  strerror(err));
+    if (datalen < sizeof(int *))
+        goto error;
 
     screenState = s_screenState = ((int *) data)[0];
 
@@ -306,7 +300,7 @@ static void requestScreenState(void *data, size_t datalen, RIL_Token t)
         if (err != AT_NOERROR)
             goto error;
 
-        isSimSmsStorageFull();
+        isSimSmsStorageFull(NULL);
         pollSignalStrength((void *)-1);
 
         err = at_send_command("AT+CMER=3,0,0,1");
@@ -334,16 +328,13 @@ static void requestScreenState(void *data, size_t datalen, RIL_Token t)
     RIL_onRequestComplete(t, RIL_E_SUCCESS, NULL, 0);
 
 finally:
-    if ((err = pthread_mutex_unlock(&s_screen_state_mutex)) != 0)
-        LOGE("%s() failed to release screen state mutex: %s",
-            __func__,  strerror(err));
+    releaseScreenStateLock();
     return;
 
 error:
     LOGE("ERROR: requestScreenState failed");
     RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 
-    releaseScreenStateLock();
     goto finally;
 }
 
@@ -430,7 +421,6 @@ static void processRequest(int request, void *data, size_t datalen, RIL_Token t)
     }
 
     switch (request) {
-
 
         case RIL_REQUEST_GET_CURRENT_CALLS:
             if (radio_state == RADIO_STATE_SIM_LOCKED_OR_ABSENT)
@@ -586,7 +576,6 @@ static void processRequest(int request, void *data, size_t datalen, RIL_Token t)
             break;
 
         /* SIM Application Toolkit */
-
         case RIL_REQUEST_STK_SEND_TERMINAL_RESPONSE:
             requestStkSendTerminalResponse(data, datalen, t);
             break;
@@ -641,9 +630,9 @@ static void onRequest(int request, void *data, size_t datalen, RIL_Token t)
         LOGE("%s() failed to take queue mutex: %s!", __func__, strerror(err));
 
     /* Queue empty, just throw r on top. */
-    if (q->requestList == NULL) {
+    if (q->requestList == NULL)
         q->requestList = r;
-    } else {
+    else {
         RILRequest *l = q->requestList;
         while (l->next != NULL)
             l = l->next;
@@ -658,8 +647,6 @@ static void onRequest(int request, void *data, size_t datalen, RIL_Token t)
     if ((err = pthread_mutex_unlock(&q->queueMutex)) != 0)
         LOGE("%s() failed to release queue mutex: %s!",
             __func__, strerror(err));
-
-    return;
 }
 
 
@@ -738,7 +725,7 @@ static char initializeCommon(void)
         return 1;
 
     /* Send the current time of the OS to the module */
-    sendTime();
+    sendTime(NULL);
 
     /* Try to register for hotswap events. Don't care if it fails. */
     err = at_send_command("AT*EESIMSWAP=1");
@@ -781,7 +768,7 @@ static char initializeCommon(void)
  * Initialize everything that can be configured while we're still in
  * AT+CFUN=0.
  */
-static char initializeChannel()
+static char initializeChannel(void)
 {
     int err;
 
@@ -833,7 +820,7 @@ static char initializeChannel()
  * Initialize everything that can be configured while we're still in
  * AT+CFUN=0.
  */
-static char initializePrioChannel()
+static char initializePrioChannel(void)
 {
     int err;
 
@@ -930,17 +917,19 @@ static void signalCloseQueues(void)
 }
 
 /* Called on command or reader thread. */
-static void onATReaderClosed()
+static void onATReaderClosed(void)
 {
     LOGI("AT channel closed");
 
     if (!get_pending_hotswap())
         setRadioState(RADIO_STATE_UNAVAILABLE);
     signalCloseQueues();
+
+    at_close();
 }
 
 /* Called on command thread. */
-static void onATTimeout()
+static void onATTimeout(void)
 {
     LOGI("AT channel timeout; restarting..");
     /* Last resort, throw escape on the line, close the channel
@@ -1002,11 +991,10 @@ static void *queueRunner(void *param)
         max_fd = -1;
         while (fd < 0) {
             if (queueArgs->port > 0) {
-                if (queueArgs->loophost) {
+                if (queueArgs->loophost)
                     fd = socket_network_client(queueArgs->loophost, queueArgs->port, SOCK_STREAM);
-                } else {
+                else
                     fd = socket_loopback_client(queueArgs->port, SOCK_STREAM);
-                }
             } else if (queueArgs->device_path != NULL) {
                 /* Program is not controlling terminal -> O_NOCTTY */
                 /* Dont care about DCD -> O_NDELAY */
@@ -1060,9 +1048,9 @@ static void *queueRunner(void *param)
         if (n < 0) {
             LOGE("%s() Select error", __func__);
             return NULL;
-        } else if (n == 0) {
+        } else if (n == 0)
             LOGE("%s() timeout, go ahead anyway(might work)...", __func__);
-        } else {
+        else {
             memset(start, 0, MAX_BUF);
             safe_read(fd, start, MAX_BUF-1);
 

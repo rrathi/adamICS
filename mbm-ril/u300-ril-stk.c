@@ -54,7 +54,9 @@ struct refreshStatus {
 
 struct stkmenu {
     size_t len;
+    char tag[3];
     char id[3];
+    char ct[3];
     char *data;
     char *end;
 };
@@ -113,15 +115,13 @@ void requestStkSendEnvelopeCommand(void *data, size_t datalen, RIL_Token t)
     if (err < 0)
         goto error;
 
-    RIL_onRequestComplete(t, RIL_E_SUCCESS, stkResponse,
-                          sizeof(char *));
+    RIL_onRequestComplete(t, RIL_E_SUCCESS, stkResponse, sizeof(char *));
     at_response_free(atresponse);
     return;
 
 error:
     at_response_free(atresponse);
     RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
-
 }
 
 /**
@@ -233,23 +233,9 @@ void requestStkSetProfile(void *data, size_t datalen, RIL_Token t)
     RIL_onRequestComplete(t, rilresponse, NULL, 0);
 }
 
-static void dropZeros(char *dst, char *src, int len)
-{
-    int i;
-
-    for (i=0; i<len/2; i++) {
-        if (strncmp(src, "00", 2)) {
-            strncpy(dst, src, 2);
-            dst += 2;
-        }
-        src += 2;
-    }
-}
-
-#define ITEM_TAG_SIZE 2
-#define PROACT_TAG_SIZE 2
-#define LEN_SIZE 2
-#define ID_ITEM_SIZE 2
+#define ITEM_TAG_SIZE 1
+#define PROACT_TAG_SIZE 1
+#define LEN_SIZE 1
 
 static char *buildStkMenu(struct stkmenu *cmenu, int n)
 {
@@ -262,10 +248,12 @@ static char *buildStkMenu(struct stkmenu *cmenu, int n)
     char cmd_dts_cmd_id[] = "8103012500" "82028182";
 
     firsttaglen = sizeof(cmd_dts_cmd_id) - 1;
-    resplen = firsttaglen + PROACT_TAG_SIZE + 2*LEN_SIZE + 1;
+    lentag = firsttaglen / 2;
 
     for (i=0; i<=n; i++)
-        resplen += ITEM_TAG_SIZE + LEN_SIZE + ID_ITEM_SIZE + cmenu[i].len / 2;
+        lentag += ITEM_TAG_SIZE + LEN_SIZE + cmenu[i].len/2;
+
+    resplen = 2 * (lentag + PROACT_TAG_SIZE + 2 * LEN_SIZE) + 1;
 
     resp = malloc(resplen);
 
@@ -274,17 +262,12 @@ static char *buildStkMenu(struct stkmenu *cmenu, int n)
         return NULL;
     }
 
-    memset(resp, sizeof(resp), 0);
+    memset(resp, '\0', resplen);
 
     p = resp;
 
     strncpy(p, "D0", 2);
     p += 2;
-
-    /* Since the length and D0 proactive command doesnot contribute towards the
-     * length, subtract them from the total length when calcualting the length
-     * of the proactive command */
-    lentag = (resplen - (PROACT_TAG_SIZE+(2*LEN_SIZE)+1+ID_ITEM_SIZE))/2;
 
     if (lentag > 0x7f) {
         sprintf(p,"%02x",0x81);
@@ -296,35 +279,29 @@ static char *buildStkMenu(struct stkmenu *cmenu, int n)
     strncpy(p, cmd_dts_cmd_id, firsttaglen);
     p += firsttaglen;
 
-    strcpy(p, "85");
-    p += 2;
+    for (i=0; i<=n; i++) {
+        strcpy(p, cmenu[i].tag);
+        p += strlen(cmenu[i].tag);
 
-    snprintf(p, 3, "%02x", cmenu[0].len/4);
-    p += 2;
-
-    dropZeros(p, cmenu[0].data+1, cmenu[0].len);
-    p += cmenu[0].len/2;
-
-    for (i=1; i<=n; i++) {
-        strcpy(p, "8F");
+        snprintf(p, 3, "%02x", cmenu[i].len/2);
         p += 2;
 
-        snprintf(p, 3, "%02x", cmenu[i].len/4 + 1);
-        p += 2;
+        strcpy(p, cmenu[i].id);
+        p += strlen(cmenu[i].id);
 
-        snprintf(p, 3, "%s", cmenu[i].id);
-        p += 2;
+        strcpy(p, cmenu[i].ct);
+        p += strlen(cmenu[i].ct);
 
-        dropZeros(p, cmenu[i].data, cmenu[i].len);
-        p += cmenu[i].len / 2;
+        strncpy(p, cmenu[i].data, cmenu[i].len - strlen(cmenu[i].ct) - strlen(cmenu[i].id));
+        p += cmenu[i].len - strlen(cmenu[i].ct) - strlen(cmenu[i].id);
     }
 
     return resp;
 }
 
-void getCachedStkMenu()
+void getCachedStkMenu(void)
 {
-    int id;
+    int id, ct;
     int err;
     int i, n;
     struct stkmenu *pcm;
@@ -352,47 +329,101 @@ void getCachedStkMenu()
     if (n == LONG_MAX || n == LONG_MIN)
         goto cleanup;
 
-    if (n < 1)
+    if (n < 0)
         goto cleanup;
 
-    cmenu = malloc((n+1)*sizeof(struct stkmenu));
-    if (!cmenu) {
-        LOGD("%s() Memory allocation error", __func__);
-        goto cleanup;
-    }
+    if (n == 0) {
+        n = 1;
+        cmenu = malloc((n+1)*sizeof(struct stkmenu));
+        if (!cmenu) {
+            LOGD("%s() Memory allocation error", __func__);
+            goto cleanup;
+        }
 
-    memset(cmenu, '\0', sizeof(cmenu));
+        memset(cmenu, '\0', sizeof(cmenu));
 
-    pcm = cmenu;
+        for (i = 0; i<=1; i++) {
+            pcm = &cmenu[i];
+            if (i == 0)
+                snprintf(pcm->tag, 3, "85");
+            else
+                snprintf(pcm->tag, 3, "8F");
+            pcm->id[0] = '\0';
+            pcm->ct[0] = '\0';
+            pcm->data = "";
+            pcm->end = pcm->data;
+            pcm->len = 0;
+        }
+    } else {
+        cmenu = malloc((n+1)*sizeof(struct stkmenu));
+        if (!cmenu) {
+            LOGD("%s() Memory allocation error", __func__);
+            goto cleanup;
+        }
 
-    pcm->data = strrchr(line, ' ');
-    if (!pcm->data)
-        goto cleanup;
+        memset(cmenu, '\0', sizeof(cmenu));
 
-    pcm->end = strchr(line, ',');
-    if (!pcm->end)
-        goto cleanup;
+        pcm = cmenu;
 
-    pcm->len = pcm->end - pcm->data;
+        snprintf(pcm->tag, 3, "85");
 
-    for (i = 1; i<=n; i++) {
-        cursor = cursor->p_next;
-        line = cursor->line;
+        pcm->id[0] = '\0';
 
-        pcm = &cmenu[i];
-        err = at_tok_nextint(&line, &id);
-        if (err < 0)
+        pcm->data = strrchr(line, ' ') + 1;
+        if (!pcm->data)
             goto cleanup;
 
-        snprintf(pcm->id, 3, "%02x", id);
-
-        pcm->data = line;
         pcm->end = strchr(line, ',');
         if (!pcm->end)
             goto cleanup;
 
-        pcm->len = pcm->end - pcm->data;
+        line = pcm->end + 1;
+        err = at_tok_nextint(&line, &ct);
+        if (err < 0)
+            goto cleanup;
 
+        if (ct == 0)
+            pcm->ct[0] = '\0';
+        else if (ct == 1)
+            snprintf(pcm->ct, 3, "80");
+        else
+            goto cleanup;
+
+        pcm->len = pcm->end - pcm->data + strlen(pcm->ct) + strlen(pcm->id);
+
+        for (i = 1; i<=n; i++) {
+            cursor = cursor->p_next;
+            line = cursor->line;
+
+            pcm = &cmenu[i];
+
+            snprintf(pcm->tag, 3, "8F");
+
+            err = at_tok_nextint(&line, &id);
+            if (err < 0)
+                goto cleanup;
+
+            snprintf(pcm->id, 3, "%02x", id);
+
+            pcm->data = line;
+            pcm->end = strchr(line, ',');
+            if (!pcm->end)
+                goto cleanup;
+
+            line = pcm->end + 1;
+            err = at_tok_nextint(&line, &ct);
+            if (err < 0)
+                goto cleanup;
+
+            if (ct == 0)
+                pcm->ct[0] = '\0';
+            else if (ct == 1)
+                snprintf(pcm->ct, 3, "80");
+            else
+                goto cleanup;
+
+            pcm->len = pcm->end - pcm->data + strlen(pcm->ct) + strlen(pcm->id);
+        }
     }
     resp = buildStkMenu(cmenu, n);
 
@@ -449,9 +480,8 @@ static void sendRefreshTerminalResponse(void *param)
     int err;
     struct refreshStatus *refreshState = (struct refreshStatus *)param;
 
-    if (!refreshState) {
+    if (!refreshState)
         LOGD("%s() called with null parameter", __func__);
-    }
 
     err = at_send_command("AT*STKR=\"8103%02x01%02x820282818301%02x\"",
                    refreshState->cmdNumber, refreshState->cmdQualifier,
@@ -462,8 +492,6 @@ static void sendRefreshTerminalResponse(void *param)
 
     if (err != AT_NOERROR)
         LOGD("%s() Failed sending at command", __func__);
-
-    return;
 }
 
 static uint16_t hex2int(const char *data) {

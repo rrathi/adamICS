@@ -130,7 +130,6 @@ exit:
     return ret;
 }
 
-
 /**
  * Parses the next integer in the AT response line and places it in *p_out.
  * Returns 0 on success and -1 on fail.

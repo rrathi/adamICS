@@ -22,7 +22,6 @@
 */
 
 #include <telephony/ril.h>
-#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -287,7 +286,7 @@ static const int ef_telecom_files[] = {
 static int s_simResetting = 0;
 static int s_simRemoved = 0;
 
-int get_pending_hotswap()
+int get_pending_hotswap(void)
 {
     return sim_hotswap;
 }
@@ -301,14 +300,20 @@ void onSimStateChanged(const char *s)
 {
     int state;
     char *tok = NULL;
-    char *line = tok = strdup(s);
-    assert(tok != NULL);
+    char *line = NULL;
 
     /* let the status from EESIMSWAP override
      * that of ESIMSR
      */
     if (s_simRemoved)
-        goto finally;
+        return;
+
+    line = tok = strdup(s);
+
+    if (NULL == line) {
+        LOGE("%s() failed to allocate memory!", __func__);
+        return;
+    }
 
     if (at_tok_start(&line) < 0)
         goto error;
@@ -435,7 +440,7 @@ static int getNumRetries (int request) {
 }
 
 /** Returns one of SIM_*. Returns SIM_NOT_READY on error. */
-static SIM_Status getSIMStatus()
+static SIM_Status getSIMStatus(void)
 {
     ATResponse *atresponse = NULL;
     int err;
@@ -443,9 +448,8 @@ static SIM_Status getSIMStatus()
     char *cpinLine;
     char *cpinResult;
 
-    if (s_simRemoved) {
+    if (s_simRemoved)
         return SIM_ABSENT;
-    }
 
     if (getRadioState() == RADIO_STATE_OFF ||
         getRadioState() == RADIO_STATE_UNAVAILABLE) {
@@ -455,9 +459,8 @@ static SIM_Status getSIMStatus()
     err = at_send_command_singleline("AT+CPIN?", "+CPIN:", &atresponse);
 
     if (err != AT_NOERROR) {
-        if (at_get_error_type(err) == AT_ERROR) {
+        if (at_get_error_type(err) == AT_ERROR)
             return SIM_NOT_READY;
-        }
 
         switch (at_get_cme_error(err)) {
         case CME_SIM_NOT_INSERTED:
@@ -574,7 +577,7 @@ done:
  *
  * \return UICC_Type: type of UICC card.
  */
-static UICC_Type getUICCType()
+static UICC_Type getUICCType(void)
 {
     ATResponse *atresponse = NULL;
     static UICC_Type UiccType = UICC_TYPE_UNKNOWN;
@@ -744,9 +747,8 @@ void requestGetSimStatus(void *data, size_t datalen, RIL_Token t)
     RIL_onRequestComplete(t, RIL_E_SUCCESS, (char*)p_card_status, sizeof(*p_card_status));
 
 finally:
-    if (p_card_status != NULL) {
+    if (p_card_status != NULL)
         freeCardStatus(p_card_status);
-    }
     return;
 
 error:
@@ -754,7 +756,7 @@ error:
     goto finally;
 }
 
-static int simIOGetLogicalChannel()
+static int simIOGetLogicalChannel(void)
 {
     ATResponse *atresponse = NULL;
     static int g_lc = 0;
@@ -853,7 +855,6 @@ static int simIOSelectFile(unsigned short fileid)
 finally:
     at_response_free(atresponse);
     return err;
-
 }
 
 static int simIOSelectPath(const char *path, unsigned short fileid)
@@ -864,21 +865,21 @@ static int simIOSelectPath(const char *path, unsigned short fileid)
     static char cashed_path[4 * 10 + 1] = {'\0'};
     static unsigned short cashed_fileid = 0;
 
-    if (path == NULL) {
+    if (path == NULL)
         path = "3F00";
-    }
+
     path_len = strlen(path);
 
-    if (path_len & 3) {
+    if (path_len & 3)
         return -EINVAL;
-    }
 
     if ((fileid != cashed_fileid) || (strcmp(path, cashed_path) != 0)) {
         for(pos = 0; pos < path_len; pos += 4) {
             unsigned val;
-            if(sscanf(&path[pos], "%4X", &val) != 1) {
+
+            if(sscanf(&path[pos], "%4X", &val) != 1)
                 return -EINVAL;
-            }
+
             err = simIOSelectFile(val);
             if (err < 0)
                 return err;
@@ -1222,7 +1223,6 @@ finally:
 error:
     RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
     goto finally;
-
 }
 
 /**
@@ -1313,9 +1313,8 @@ error:
     if (at_get_cme_error(err) == CME_INCORRECT_PASSWORD) {
         num_retries = getNumRetries(request);
         RIL_onRequestComplete(t, RIL_E_PASSWORD_INCORRECT, &num_retries, sizeof(int *));
-    } else {
+    } else
         RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
-    }
 }
 
 /**
@@ -1334,14 +1333,22 @@ void requestSetFacilityLock(void *data, size_t datalen, RIL_Token t)
     int num_retries = -1;
     RIL_Errno errorril = RIL_E_GENERIC_FAILURE;
     (void) datalen;
-    assert(datalen >= (4 * sizeof(char **)));
+
+    if (datalen < 4 * sizeof(char **)) {
+        LOGE("%s() bad data length!", __func__);
+        goto exit;
+    }
 
     facility_string = ((char **) data)[0];
     facility_mode_str = ((char **) data)[1];
     facility_password = ((char **) data)[2];
     facility_class = ((char **) data)[3];
 
-    assert(*facility_mode_str == '0' || *facility_mode_str == '1');
+    if (*facility_mode_str != '0' && *facility_mode_str != '1') {
+        LOGE("%s() bad facility mode!", __func__);
+        goto exit;
+    }
+
     facility_mode = atoi(facility_mode_str);
 
     /*
@@ -1421,7 +1428,11 @@ void requestQueryFacilityLock(void *data, size_t datalen, RIL_Token t)
     char *facility_class = NULL;
 
     (void) datalen;
-    assert(datalen >= (3 * sizeof(char **)));
+
+    if (datalen < 3 * sizeof(char **)) {
+        LOGE("%s() bad data length!", __func__);
+        goto error;
+    }
 
     facility_string = ((char **) data)[0];
     facility_password = ((char **) data)[1];

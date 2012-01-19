@@ -50,7 +50,7 @@ struct held_pdu {
 static pthread_mutex_t s_held_pdus_mutex = PTHREAD_MUTEX_INITIALIZER;
 static struct held_pdu *s_held_pdus = NULL;
 
-static struct held_pdu *dequeue_held_pdu()
+static struct held_pdu *dequeue_held_pdu(void)
 {
     struct held_pdu *hpdu = NULL;
 
@@ -90,13 +90,14 @@ static void enqueue_held_pdu(char type, const char *sms_pdu)
     }
 }
 
-void isSimSmsStorageFull()
+void isSimSmsStorageFull(void *p)
 {
     ATResponse *atresponse = NULL;
     char *tok = NULL;
     char* storage_area = NULL;
     int used1, total1;
     int err;
+    (void) p;
 
     err = at_send_command_singleline("AT+CPMS?", "+CPMS: ", &atresponse);
     if (err != AT_NOERROR)
@@ -385,20 +386,20 @@ void requestGSMSetBroadcastSMSConfig(void *data, size_t datalen,
         }
     }
 
-    if (mids == NULL)
-        goto error;
+    if (mids == NULL) {
+	RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
+	return;
+    }
 
     err = at_send_command("AT+CSCB=0,\"%s\"", mids);
     free(mids);
 
-    if (err != AT_NOERROR)
-        goto error;
+    if (err != AT_NOERROR) {
+        RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
+	return;
+    }
 
     RIL_onRequestComplete(t, RIL_E_SUCCESS, NULL, 0);
-    return;
-
-error:
-    RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
 }
 
 /**
@@ -593,7 +594,6 @@ void requestSMSAcknowledge(void *data, size_t datalen, RIL_Token t)
         s_outstanding_acknowledge = 0;
 
     pthread_mutex_unlock(&s_held_pdus_mutex);
-
 }
 
 /**
@@ -660,7 +660,6 @@ error:
 void requestDeleteSmsOnSim(void *data, size_t datalen, RIL_Token t)
 {
     int err;
-
     (void) data; (void) datalen;
 
     err = at_send_command("AT+CMGD=%d", ((int *) data)[0]);
@@ -730,7 +729,6 @@ void requestSmsStorageFull(void *data, size_t datalen, RIL_Token t)
 {
     int ack;
     int err;
-
     (void) data; (void) datalen; (void) err;
 
     ack = ((int *) data)[0];
@@ -765,7 +763,7 @@ void requestSmsStorageFull(void *data, size_t datalen, RIL_Token t)
  * SIM SMS storage area is full, cannot receive
  * more messages until memory freed
  */
-void onNewSmsIndication()
+void onNewSmsIndication(void)
 {
     enqueueRILEvent(RIL_EVENT_QUEUE_PRIO, isSimSmsStorageFull, NULL, NULL);
 }
@@ -774,7 +772,7 @@ void onNewSmsIndication()
  * Configure preferred message storage
  *  mem1 = SM, mem2 = SM
  */
-int setPreferredMessageStorage()
+int setPreferredMessageStorage(void)
 {
     ATResponse *atresponse = NULL;
     char *tok = NULL;
@@ -826,10 +824,11 @@ exit:
 }
 
 /* Check if ME is ready to set preferred message storage */
-void checkMessageStorageReady()
+void checkMessageStorageReady(void *p)
 {
     int err;
     struct timespec trigger_time;
+    (void) p;
 
     err = at_send_command_singleline("AT+CPMS?","+CPMS: ", NULL);
     if (err == AT_NOERROR) {

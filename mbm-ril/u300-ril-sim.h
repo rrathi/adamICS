@@ -24,7 +24,7 @@
 #ifndef U300_RIL_SIM_H
 #define U300_RIL_SIM_H 1
 
-int get_pending_hotswap();
+int get_pending_hotswap(void);
 void set_pending_hotswap(int pending_hotswap);
 
 void onSimStateChanged(const char *s);
@@ -39,6 +39,5 @@ void requestSetFacilityLock(void *data, size_t datalen, RIL_Token t);
 void requestQueryFacilityLock(void *data, size_t datalen, RIL_Token t);
 
 void pollSIMState(void *param);
-void onSIMReady();
 
 #endif

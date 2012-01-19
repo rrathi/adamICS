@@ -56,6 +56,8 @@ void requestOEMHookStrings(void *data, size_t datalen, RIL_Token t)
     int i;
     const char **cur;
     ATResponse *atresponse = NULL;
+    ATLine *atline;
+    int linecount;
     int err;
 
     LOGD("%s() got OEM_HOOK_STRINGS: %8p %lu", __func__, data, (long) datalen);
@@ -71,11 +73,37 @@ void requestOEMHookStrings(void *data, size_t datalen, RIL_Token t)
 
     if ((err != AT_NOERROR && at_get_error_type(err) == AT_ERROR)
             || atresponse == NULL || atresponse->finalResponse == NULL)
-        RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
-    else { /* answer with OK or ERROR without intermediate responses for now */
-        RIL_onRequestComplete(t, RIL_E_SUCCESS, &atresponse->finalResponse,
-                1*sizeof(char *));
+        goto error;
 
+    /* Count number of lines including prefix, intermediate and final response */
+    linecount = 0;
+    atline = atresponse->p_intermediates;
+    while (atline != NULL && atline->line != NULL) {
+        linecount++;
+        atline = atline->p_next;
     }
+    linecount++; /* for finalResponse */
+
+    /* Create RIL response */
+    if (linecount > 0) {
+        cur = (const char **) alloca(linecount * sizeof (char *));
+        if (cur != NULL) {
+            linecount = 0;
+            atline = atresponse->p_intermediates;
+            while (atline != NULL && atline->line != NULL) {
+                cur[linecount++] = atline->line;
+                atline = atline->p_next;
+            }
+            cur[linecount++] = atresponse->finalResponse;
+        } else
+            goto error;
+    }
+
+    RIL_onRequestComplete(t, RIL_E_SUCCESS, cur, linecount * sizeof(char *));
+    at_response_free(atresponse);
+    return;
+
+error:
+    RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
     at_response_free(atresponse);
 }
