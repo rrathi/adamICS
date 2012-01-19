@@ -9,12 +9,10 @@ void requestGetIMEI(void *data, size_t datalen, RIL_Token t);
 void requestGetIMEISV(void *data, size_t datalen, RIL_Token t);
 void requestBasebandVersion(void *data, size_t datalen, RIL_Token t);
 
-void sendTime(void);
 int retryRadioPower(void);
 int isRadioOn(void);
 void setRadioState(RIL_RadioState newState);
 RIL_RadioState getRadioState(void);
-void onSimReady(void);
-
+void onSIMReady(void *p);
 
 #endif

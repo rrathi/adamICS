@@ -29,9 +29,9 @@ void onNetworkTimeReceived(const char *s);
 void onSignalStrengthChanged(const char *s);
 void onNetworkStatusChanged(const char *s);
 
-int getPreferredNetworkType();
+int getPreferredNetworkType(void);
 
-int getPreferredNetworkType();
+int getPreferredNetworkType(void);
 
 void requestSetNetworkSelectionAutomatic(void *data, size_t datalen,
                                          RIL_Token t);
@@ -58,6 +58,6 @@ void requestRadioPower(void *data, size_t datalen, RIL_Token t);
 
 void pollSignalStrength(void *bar);
 
-
+void sendTime(void *p);
 
 #endif

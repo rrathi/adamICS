@@ -172,7 +172,7 @@ error:
     return;
 }
 
-void sendTime()
+void sendTime(void *p)
 {
     time_t t;
     struct tm tm;
@@ -181,6 +181,7 @@ void sendTime()
     int num[4];
     int tzi;
     int i;
+    (void) p;
 
     tzset();
     t = time(NULL);
@@ -268,17 +269,17 @@ int getSignalStrength(RIL_SignalStrength_v6 *signalStrength){
 
     memset(signalStrength, 0, sizeof(RIL_SignalStrength_v6));
 
-    signalStrength->LTE_SignalStrength.signalStrength = -1;
-    signalStrength->LTE_SignalStrength.rsrp = -1;
-    signalStrength->LTE_SignalStrength.rsrq = -1;
-    signalStrength->LTE_SignalStrength.rssnr = -1;
-    signalStrength->LTE_SignalStrength.cqi = -1;
+    signalStrength->LTE_SignalStrength.signalStrength = 0x7FFFFFFF;
+    signalStrength->LTE_SignalStrength.rsrp = 0x7FFFFFFF;
+    signalStrength->LTE_SignalStrength.rsrq = 0x7FFFFFFF;
+    signalStrength->LTE_SignalStrength.rssnr = 0x7FFFFFFF;
+    signalStrength->LTE_SignalStrength.cqi = 0x7FFFFFFF;
 
     err = at_send_command_singleline("AT+CSQ", "+CSQ:", &atresponse);
 
-    if (err != AT_NOERROR) {
+    if (err != AT_NOERROR)
         goto cind;
-    }
+    
     line = atresponse->p_intermediates->line;
 
     err = at_tok_start(&line);
@@ -359,12 +360,12 @@ void pollSignalStrength(void *arg)
 {
     RIL_SignalStrength_v6 signalStrength;
     (void) arg;
-    if (getSignalStrength(&signalStrength) < 0) {
+
+    if (getSignalStrength(&signalStrength) < 0)
         LOGE("%s() Polling the signal strength failed", __func__);
-    } else {
+    else
         RIL_onUnsolicitedResponse(RIL_UNSOL_SIGNAL_STRENGTH,
                                   &signalStrength, sizeof(RIL_SignalStrength_v6));
-    }
 }
 
 void onSignalStrengthChanged(const char *s)
@@ -433,7 +434,6 @@ void requestSetNetworkSelectionAutomatic(void *data, size_t datalen,
     int skip;
     char *line;
     char *operator = NULL;
-
     struct operatorPollParams *poll_params = NULL;
 
     poll_params = malloc(sizeof(struct operatorPollParams));
@@ -462,9 +462,8 @@ void requestSetNetworkSelectionAutomatic(void *data, size_t datalen,
         if (mode == 1) {
             LOGD("%s() Changing manual to automatic network mode", __func__);
             goto do_auto;
-        } else {
+        } else
             goto check_reg;
-        }
     }
 
     err = at_tok_nextint(&line, &skip);
@@ -476,9 +475,8 @@ void requestSetNetworkSelectionAutomatic(void *data, size_t datalen,
         if (mode == 1) {
             LOGD("%s() Changing manual to automatic network mode", __func__);
             goto do_auto;
-        } else {
+        } else
             goto check_reg;
-        }
     }
 
     /* Read numeric operator */
@@ -492,9 +490,8 @@ void requestSetNetworkSelectionAutomatic(void *data, size_t datalen,
         if (mode == 1) {
             LOGD("%s() Changing manual to automatic network mode", __func__);
             goto do_auto;
-        } else {
+        } else
             goto check_reg;
-        }
     }
 
     /* Operator found */
@@ -640,7 +637,6 @@ void requestSetNetworkSelectionManual(void *data, size_t datalen,
         goto error;
 
     RIL_onRequestComplete(t, RIL_E_SUCCESS, NULL, 0);
-
     return;
 
 error:
@@ -774,7 +770,7 @@ error:
 /*
  * get the preferred network type as set by Android
  */
-int getPreferredNetworkType()
+int getPreferredNetworkType(void)
 {
     return pref_net_type;
 }
@@ -854,7 +850,8 @@ void requestGetPreferredNetworkType(void *data, size_t datalen,
     if (err < 0)
         goto error;
 
-    assert(cfun >= 0 && cfun < 7);
+    if (cfun < 0 || cfun >= 7)
+        goto error;
 
     switch (cfun) {
     case PREF_NET_TYPE_2G_ONLY:
@@ -948,10 +945,9 @@ void requestSignalStrength(void *data, size_t datalen, RIL_Token t)
     if (getSignalStrength(&signalStrength) < 0) {
         LOGE("%s() Must never return an error when radio is on", __func__);
         RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
-    } else {
+    } else
         RIL_onRequestComplete(t, RIL_E_SUCCESS, &signalStrength,
                               sizeof(RIL_SignalStrength_v6));
-    }
 }
 
 /**
@@ -1411,8 +1407,7 @@ void requestRegistrationState(int request, void *data,
     s_registrationDeniedReason = DEFAULT_VALUE;
 
     if (response[0] == CGREG_STAT_REG_DENIED) {
-        err = at_send_command_singleline("AT*E2REG?", "*E2REG:",
-                                         &e2reg_resp);
+        err = at_send_command_singleline("AT*E2REG?", "*E2REG:", &e2reg_resp);
 
         if (err != AT_NOERROR)
             goto error;
@@ -1452,9 +1447,8 @@ void requestRegistrationState(int request, void *data,
         goto error;
 
     if (response[0] == CGREG_STAT_REG_HOME_NET ||
-        response[0] == CGREG_STAT_ROAMING) {
+        response[0] == CGREG_STAT_ROAMING)
         responseStr[3] = getNetworkType(0);
-    }
 
     RIL_onRequestComplete(t, RIL_E_SUCCESS, responseStr,
                           resp_size * sizeof(char *));
@@ -1574,5 +1568,3 @@ error:
     RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
     goto finally;
 }
-
-

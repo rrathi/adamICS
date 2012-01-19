@@ -84,7 +84,7 @@ typedef struct {
 typedef void (*ATUnsolHandler)(const char *s, const char *sms_pdu);
 
 int at_open(int fd, ATUnsolHandler h);
-void at_close();
+void at_close(void);
 
 /*
  * Set default timeout for at commands. Let it be reasonable high
@@ -122,7 +122,7 @@ int at_send_command_multiline (const char *command,
                                ...);
 
 
-int at_handshake();
+int at_handshake(void);
 
 int at_send_command (const char *command, ...);
 

@@ -28,7 +28,7 @@ void onNewSms(const char *sms_pdu);
 void onNewStatusReport(const char *sms_pdu);
 void onNewBroadcastSms(const char *sms_pdu);
 void onNewSmsOnSIM(const char* s);
-void onNewSmsIndication();
+void onNewSmsIndication(void);
 void requestSendSMS(void *data, size_t datalen, RIL_Token t);
 void requestSendSMSExpectMore(void *data, size_t datalen, RIL_Token t);
 void requestSMSAcknowledge(void *data, size_t datalen, RIL_Token t);
@@ -40,8 +40,8 @@ void requestSmsStorageFull(void *data, size_t datalen, RIL_Token t);
 void requestGSMGetBroadcastSMSConfig(void *data, size_t datalen, RIL_Token t);
 void requestGSMSetBroadcastSMSConfig(void *data, size_t datalen, RIL_Token t);
 void requestGSMSMSBroadcastActivation(void *data, size_t datalen, RIL_Token t);
-void isSimSmsStorageFull();
-void checkMessageStorageReady();
-int setPreferredMessageStorage();
+void isSimSmsStorageFull(void *p);
+void checkMessageStorageReady(void *p);
+int setPreferredMessageStorage(void);
 
 #endif

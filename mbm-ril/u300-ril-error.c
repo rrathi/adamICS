@@ -152,6 +152,7 @@ const char *errorCauseToString(int cause)
             string = "E2NAP_C_<> Unknown!";
             break;
     }
+
     return string;
 }
 

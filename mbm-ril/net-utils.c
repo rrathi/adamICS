@@ -49,9 +49,8 @@ int ifc_init(void)
 {
     if (ifc_ctl_sock == -1) {
 	ifc_ctl_sock = socket(AF_INET, SOCK_DGRAM, 0);
-	if (ifc_ctl_sock < 0) {
+	if (ifc_ctl_sock < 0)
 	    LOGE("%s() socket() failed: %s", __func__, strerror(errno));
-	}
     }
     return ifc_ctl_sock < 0 ? -1 : 0;
 }

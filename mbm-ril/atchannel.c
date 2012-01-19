@@ -53,7 +53,7 @@
 #define HANDSHAKE_RETRY_COUNT 8
 #define HANDSHAKE_TIMEOUT_MSEC 250
 #define DEFAULT_AT_TIMEOUT_MSEC (3 * 60 * 1000)
-#define BUFFSIZE 256
+#define BUFFSIZE 512
 
 struct atcontext {
     pthread_t tid_reader;
@@ -99,9 +99,9 @@ static pthread_once_t key_once = PTHREAD_ONCE_INIT;
 
 static int writeCtrlZ (const char *s);
 static int writeline (const char *s);
-static void onReaderClosed();
+static void onReaderClosed(void);
 
-static void make_key()
+static void make_key(void)
 {
     (void) pthread_key_create(&key, NULL);
 }
@@ -132,7 +132,7 @@ static void ac_free(void)
     }
 }
 
-static int initializeAtContext()
+static int initializeAtContext(void)
 {
     struct atcontext *ac = NULL;
 
@@ -158,8 +158,7 @@ static int initializeAtContext()
         ac->ATBufferCur = ac->ATBuffer;
 
         if (pipe(ac->readerCmdFds)) {
-            LOGE("%s() Failed to create pipe: %s", __func__,
-                 strerror(errno));
+            LOGE("%s() Failed to create pipe: %s", __func__, strerror(errno));
             goto error;
         }
 
@@ -186,7 +185,7 @@ error:
     return -1;
 }
 
-static struct atcontext *getAtContext()
+static struct atcontext *getAtContext(void)
 {
     struct atcontext *ac = NULL;
 
@@ -390,8 +389,7 @@ static void processLine(const char *line)
             break;
         case NUMERIC:
             if (ac->response->p_intermediates == NULL
-                && isdigit(line[0])
-            ) {
+                && isdigit(line[0])) {
                 addIntermediate(line);
             } else {
                 /* Either we already have an intermediate response or
@@ -401,8 +399,7 @@ static void processLine(const char *line)
             break;
         case SINGLELINE:
             if (ac->response->p_intermediates == NULL
-                && strStartsWith (line, ac->responsePrefix)
-            ) {
+                && strStartsWith (line, ac->responsePrefix)) {
                 addIntermediate(line);
             } else {
                 /* We already have an intermediate response. */
@@ -440,7 +437,7 @@ static char * findNextEOL(char *cur)
         return cur+2;
     }
 
-    // Find next newline
+    /* Find next newline */
     while (*cur != '\0' && *cur != '\r' && *cur != '\n') cur++;
 
     return *cur == '\0' ? NULL : cur;
@@ -457,7 +454,7 @@ static char * findNextEOL(char *cur)
  * have buffered stdio.
  */
 
-static const char *readline()
+static const char *readline(void)
 {
     ssize_t count;
 
@@ -504,7 +501,10 @@ static const char *readline()
         int err;
         struct pollfd pfds[2];
 
-        if (0 >= MAX_AT_RESPONSE - (p_read - ac->ATBuffer)) {
+        /* This condition should be synchronized with the read function call
+         * size argument below.
+         */
+        if (0 >= MAX_AT_RESPONSE - (p_read - ac->ATBuffer) - 2) {
             LOGE("%s() ERROR: Input line exceeded buffer", __func__);
             /* Ditch buffer and start over again. */
             ac->ATBufferCur = ac->ATBuffer;
@@ -546,8 +546,11 @@ static const char *readline()
             continue;
 
         do
+            /* The size argument should be synchronized to the ditch buffer
+             * condition above.
+             */
             count = read(ac->fd, p_read,
-                         MAX_AT_RESPONSE - (p_read - ac->ATBuffer));
+                         MAX_AT_RESPONSE - (p_read - ac->ATBuffer) - 2);
 
         while (count < 0 && errno == EINTR);
 
@@ -555,7 +558,12 @@ static const char *readline()
             AT_DUMP( "<< ", p_read, count );
             ac->readCount += count;
 
+            /* Implementation requires extra EOS or EOL to get it right if
+             * there are no trailing newlines in the read buffer. Adding extra
+             * EOS does not harm even if there actually were trailing EOLs.
+             */
             p_read[count] = '\0';
+            p_read[count+1] = '\0';
 
             /* Skip over leading newlines. */
             while (*ac->ATBufferCur == '\r' || *ac->ATBufferCur == '\n')
@@ -578,6 +586,10 @@ static const char *readline()
 
     ret = ac->ATBufferCur;
     *p_eol = '\0';
+
+    /* The extra EOS added after read takes care of the case when there is no
+     * valid data after p_eol.
+     */
     ac->ATBufferCur = p_eol + 1;     /* This will always be <= p_read,    
                                         and there will be a \0 at *p_read. */
 
@@ -585,8 +597,7 @@ static const char *readline()
     return ret;
 }
 
-
-static void onReaderClosed()
+static void onReaderClosed(void)
 {
     struct atcontext *ac = getAtContext();
     if (ac->onReaderClosed != NULL && ac->readerClosed == 0) {
@@ -602,7 +613,6 @@ static void onReaderClosed()
         ac->onReaderClosed();
     }
 }
-
 
 static void *readerLoop(void *arg)
 {
@@ -698,7 +708,6 @@ static int writeline (const char *s)
     return 0;
 }
 
-
 static int writeCtrlZ (const char *s)
 {
     size_t cur = 0;
@@ -707,9 +716,8 @@ static int writeCtrlZ (const char *s)
 
     struct atcontext *ac = getAtContext();
 
-    if (ac->fd < 0 || ac->readerClosed > 0) {
+    if (ac->fd < 0 || ac->readerClosed > 0)
         return AT_ERROR_CHANNEL_CLOSED;
-    }
 
     LOGD("AT> %s^Z\n", s);
 
@@ -721,9 +729,8 @@ static int writeCtrlZ (const char *s)
             written = write (ac->fd, s + cur, len - cur);
         } while (written < 0 && errno == EINTR);
 
-        if (written < 0) {
+        if (written < 0)
             return AT_ERROR_GENERIC;
-        }
 
         cur += written;
     }
@@ -733,20 +740,18 @@ static int writeCtrlZ (const char *s)
         written = write (ac->fd, "\032" , 1);
     } while ((written < 0 && errno == EINTR) || (written == 0));
 
-    if (written < 0) {
+    if (written < 0)
         return AT_ERROR_GENERIC;
-    }
 
     return 0;
 }
 
-static void clearPendingCommand()
+static void clearPendingCommand(void)
 {
     struct atcontext *ac = getAtContext();
 
-    if (ac->response != NULL) {
+    if (ac->response != NULL)
         at_response_free(ac->response);
-    }
 
     ac->response = NULL;
     ac->responsePrefix = NULL;
@@ -778,9 +783,8 @@ static AT_Error at_get_error(const ATResponse *p_response)
     if (p_response == NULL)
         return merror(GENERIC_ERROR, GENERIC_ERROR_UNSPECIFIED);
 
-    if (p_response->success > 0) {
+    if (p_response->success > 0)
         return AT_NOERROR;
-    }
 
     if (p_response->finalResponse == NULL)
         return AT_ERROR_INVALID_RESPONSE;
@@ -859,7 +863,7 @@ error:
 }
 
 /* FIXME is it ok to call this from the reader and the command thread? */
-void at_close()
+void at_close(void)
 {
     struct atcontext *ac = getAtContext();
 
@@ -881,7 +885,7 @@ void at_close()
     write(ac->readerCmdFds[1], "x", 1);
 }
 
-static ATResponse * at_response_new()
+static ATResponse *at_response_new(void)
 {
     return (ATResponse *) calloc(1, sizeof(ATResponse));
 }
@@ -970,9 +974,9 @@ static int at_send_command_full_nolock (const char *command, ATCommandType type,
         goto finally;
 
     while (ac->response->finalResponse == NULL && ac->readerClosed == 0) {
-        if (timeoutMsec != 0) {
+        if (timeoutMsec != 0)
             err = pthread_cond_timeout_np(&ac->commandcond, &ac->commandmutex, timeoutMsec);
-        } else
+        else
             err = pthread_cond_wait(&ac->commandcond, &ac->commandmutex);
 
         if (err == ETIMEDOUT) {
@@ -1035,9 +1039,8 @@ static int at_send_command_full (const char *command, ATCommandType type,
            return AT_ERROR_STRING_CREATION;
         }
         ptr = strbuf;
-    } else {
+    } else
         ptr = command;
-    }
 
     err = at_send_command_full_nolock(ptr, type,
                     responsePrefix, smspdu,
@@ -1146,7 +1149,7 @@ int at_send_command_numeric (const char *command,
     struct atcontext *ac = getAtContext();
 
     err = at_send_command_full (command, NUMERIC, NULL,
-                                    NULL, ac->timeoutMsec, pp_outResponse, 0, empty);
+                                NULL, ac->timeoutMsec, pp_outResponse, 0, empty);
 
     if (err == AT_NOERROR && pp_outResponse != NULL
             && (*pp_outResponse) != NULL
@@ -1271,7 +1274,7 @@ void at_set_on_reader_closed(void (*onClose)(void))
  * Periodically issue an AT command and wait for a response.
  * Used to ensure channel has start up and is active.
  */
-int at_handshake()
+int at_handshake(void)
 {
     int i;
     int err = 0;

@@ -31,8 +31,8 @@ void requestSetupDefaultPDP(void *data, size_t datalen, RIL_Token t);
 void requestDeactivateDefaultPDP(void *data, size_t datalen, RIL_Token t);
 void requestLastPDPFailCause(void *data, size_t datalen, RIL_Token t);
 void onConnectionStateChanged(const char *s);
-int getE2napState();
-int getE2napCause();
+int getE2napState(void);
+int getE2napCause(void);
 int setE2napState(int state);
 int setE2napCause(int state);
 

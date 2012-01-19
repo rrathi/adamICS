@@ -126,9 +126,9 @@ static int parse_ip_information(char** addresses, char** gateways, char** dnses,
 
         switch (stat % 10) {
         case IP:
-            if (!*addresses) {
+            if (!*addresses)
                 *addresses = strdup(address);
-            } else {
+            else {
                 tmp_pointer = realloc(*addresses,
                         strlen(address) + strlen(*addresses) + 1);
                 if (NULL == tmp_pointer) {
@@ -146,9 +146,9 @@ static int parse_ip_information(char** addresses, char** gateways, char** dnses,
             break;
 
         case GATEWAY:
-            if (!*gateways) {
+            if (!*gateways)
                 *gateways = strdup(address);
-            } else {
+            else {
                 tmp_pointer = realloc(*gateways,
                         strlen(address) + strlen(*gateways) + 1);
                 if (NULL == tmp_pointer) {
@@ -168,9 +168,9 @@ static int parse_ip_information(char** addresses, char** gateways, char** dnses,
         case DNS:
             dnscnt++;
             LOGD("%s() DNS%d: %s", __func__, dnscnt, address);
-            if (dnscnt == 1) {
+            if (dnscnt == 1)
                 *dnses = strdup(address);
-            } else if (dnscnt == 2) {
+            else if (dnscnt == 2) {
                 tmp_pointer = realloc(*dnses,
                         strlen(address) + strlen(*dnses) + 1);
                 if (NULL == tmp_pointer) {
@@ -210,7 +210,12 @@ void requestOrSendPDPContextList(RIL_Token *token)
     int e2napState = getE2napState();
     int err;
     int cid;
-    char *line, *apn, *type, *address;
+    char *line, *apn, *type;
+    char* addresses = NULL;
+    char* dnses = NULL;
+    char* gateways = NULL;
+    in_addr_t addr;
+    in_addr_t gateway;
 
     memset(&response, 0, sizeof(response));
     response.ifname = ril_iface;
@@ -247,28 +252,17 @@ void requestOrSendPDPContextList(RIL_Token *token)
 
     at_response_free(atresponse);
     atresponse = NULL;
-    err = at_send_command_multiline("AT+CGPADDR", "+CGPADDR:", &atresponse);
-    if (err != AT_NOERROR)
-        goto error;
 
-    line = atresponse->p_intermediates->line;
-    err = at_tok_start(&line);
-    if (err < 0)
-        goto error;
+    /* TODO: Check if we should check ip for a specific CID instead */
+    if (parse_ip_information(&addresses, &gateways, &dnses, &addr, &gateway) < 0) {
+           LOGE("%s() Failed to parse network interface data", __func__);
+           goto error;
+    }
 
-    err = at_tok_nextint(&line, &cid);
-    if (err < 0)
-        goto error;
-
-    response.cid = cid;
-    err = at_tok_nextstr(&line, &address);
-    if (err < 0)
-        goto error;
-
-    response.addresses = alloca(strlen(address) + 1);
-    strcpy(response.addresses, address);
-
-    response.cid = cid;
+    response.addresses = addresses;
+    response.gateways = gateways;
+    response.dnses = dnses;
+    response.suggestedRetryTime = -1;
 
     if (token != NULL)
         RIL_onRequestComplete(*token, RIL_E_SUCCESS, &response,
@@ -277,7 +271,10 @@ void requestOrSendPDPContextList(RIL_Token *token)
         RIL_onUnsolicitedResponse(RIL_UNSOL_DATA_CALL_LIST_CHANGED, &response,
                 sizeof(RIL_Data_Call_Response_v6));
 
-    at_response_free(atresponse);
+    free(addresses);
+    free(gateways);
+    free(dnses);
+
     return;
 
 error:
@@ -303,14 +300,14 @@ void onPDPContextListChanged(void *param)
     requestOrSendPDPContextList(NULL);
 }
 
-int getE2NAPFailCause()
+int getE2NAPFailCause(void)
 {
     int e2napCause = getE2napCause();
     int e2napState = getE2napState();
 
-    if (e2napState == E2NAP_ST_CONNECTED) {
+    if (e2napState == E2NAP_ST_CONNECTED)
         return 0;
-    }
+
     return e2napCause;
 }
 
@@ -328,7 +325,7 @@ void requestPDPContextList(void *data, size_t datalen, RIL_Token t)
     requestOrSendPDPContextList(&t);
 }
 
-void mbm_check_error_cause()
+void mbm_check_error_cause(void)
 {
     int e2napCause = getE2napCause();
     int e2napState = getE2napState();
@@ -409,7 +406,7 @@ static int setCharEncoding(const char *enc)
     return 0;
 }
 
-static char *getCharEncoding()
+static char *getCharEncoding(void)
 {
     int err;
     char *line, *chSet;
@@ -439,9 +436,8 @@ static char *getCharEncoding()
     if (!strcmp(chSet, "GSM") || !strcmp(chSet, "IRA")
             || !strncmp(chSet, "8859", 4) || !strcmp(chSet, "UTF-8")) {
         result = strdup(chSet);
-    } else {
+    } else
         result = strdup("UCS-2");
-    }
 
     at_response_free(p_response);
     return result;
@@ -464,9 +460,9 @@ static int networkAuth(const char *authentication, const char *user,
     };
 
     auth = strtol(authentication, &end, 10);
-    if (end == NULL) {
+    if (end == NULL)
         return -1;
-    }
+
     switch (auth) {
     case NO_PAP_OR_CHAP:
         /* PAP and CHAP is never performed., only none
@@ -641,9 +637,10 @@ void requestSetupDefaultPDP(void *data, size_t datalen, RIL_Token t)
     response.type = (char *) type;
     response.status = 0;
     response.cid = 1;
+    response.suggestedRetryTime = -1;
 
     /* Don't use android netutils. We use our own and get the routing correct.
-     Carl Nordbeck */
+     * Carl Nordbeck */
     if (ifc_configure(ril_iface, addr, gateway))
         LOGE("%s() Failed to configure the interface %s", __func__, ril_iface);
 
@@ -671,9 +668,9 @@ error:
     at_send_command("AT*ENAP=0");
     for (i = 0; i < MBM_ENAP_WAIT_TIME; i++) {
         e2napState = getE2napState();
-        if (e2napState == E2NAP_ST_DISCONNECTED) {
+        if (e2napState == E2NAP_ST_DISCONNECTED)
             break;
-        }
+
         usleep(200 * 1000);
     }
 
@@ -761,7 +758,7 @@ void requestDeactivateDefaultPDP(void *data, size_t datalen, RIL_Token t)
     at_response_free(p_response);
     return;
 
-    error:
+error:
     RIL_onRequestComplete(t, RIL_E_GENERIC_FAILURE, NULL, 0);
     at_response_free(p_response);
 }
@@ -900,12 +897,12 @@ void onConnectionStateChanged(const char *s)
     mbm_check_error_cause();
 }
 
-int getE2napState()
+int getE2napState(void)
 {
     return s_e2napState;
 }
 
-int getE2napCause()
+int getE2napCause(void)
 {
     return s_e2napCause;
 }

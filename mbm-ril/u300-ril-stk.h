@@ -32,7 +32,7 @@ void requestStkSendEnvelopeCommand(void *data, size_t datalen,
 void requestStkGetProfile(void *data, size_t datalen, RIL_Token t);
 void requestReportStkServiceIsRunning(void *data, size_t datalen, RIL_Token t);
 void requestStkSetProfile(void *data, size_t datalen, RIL_Token t);
-void getCachedStkMenu();
+void getCachedStkMenu(void);
 void requestStkHandleCallSetupRequestedFromSIM(void *data,
                                                size_t datalen,
                                                RIL_Token t);
