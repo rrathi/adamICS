@@ -79,6 +79,20 @@ on boot
     chown system system /data/gps
     chmod 770 /data/gps
 
+# 3G
+	write /sys/bus/usb/devices/1-1/power/autosuspend 2
+	write /sys/bus/usb/devices/1-1/power/control auto
+	write /sys/bus/usb/devices/1-1/power/wakeup enabled
+	write /sys/bus/usb/devices/2-1/power/autosuspend 2
+	write /sys/bus/usb/devices/2-1/power/control auto
+	write /sys/bus/usb/devices/2-1/power/wakeup enabled
+	symlink /dev/bus/usb/002/049 /dev/cdc-wdm0
+	symlink /dev/bus/usb/002/050 /dev/cdc-wdm1
+	chown system system /dev/cdc-wdm0
+	chmod 0666 /dev/cdc-wdm0
+	chown system system /dev/cdc-wdm1
+	chmod 0666 /dev/cdc-wdm1
+	
 service wpa_supplicant /system/bin/wpa_supplicant \
     -Dwext -iwlan0 -c/data/misc/wifi/wpa_supplicant.conf
 #   we will start as root and wpa_supplicant will switch to user wifi
