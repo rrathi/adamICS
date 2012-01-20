@@ -79,6 +79,7 @@ on boot
     chown system system /data/gps
     chmod 770 /data/gps
 
+	
 service wpa_supplicant /system/bin/wpa_supplicant \
     -Dwext -iwlan0 -c/data/misc/wifi/wpa_supplicant.conf
 #   we will start as root and wpa_supplicant will switch to user wifi

@@ -44,6 +44,9 @@ PRODUCT_COPY_FILES := \
 PRODUCT_COPY_FILES += \
     device/notionink/adam/modules/scsi_wait_scan.ko:system/lib/modules/scsi_wait_scan.ko \
     device/notionink/adam/modules/tun.ko:system/lib/modules/tun.ko \
+	device/notionink/adam/modules/ah4.ko:system/lib/modules/ah4.ko \
+	device/notionink/adam/modules/xfrm_user.ko:system/lib/modules/xfrm_user.ko \
+	device/notionink/adam/modules/xfrm4_mode_tunnel.ko:system/lib/modules/xfrm4_mode_tunnel.ko \
     device/notionink/adam/modules/bcm4329.ko:system/lib/modules/bcm4329.ko
 
 # Bluetooth
