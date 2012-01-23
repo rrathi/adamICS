@@ -37,6 +37,7 @@ PRODUCT_LOCALES += mdpi
 PRODUCT_COPY_FILES := \
     $(LOCAL_KERNEL):kernel \
     device/notionink/adam/files/init.harmony.rc:root/init.harmony.rc \
+    device/notionink/adam/files/init.harmony.usb.rc:root/init.harmony.usb.rc \
     device/notionink/adam/files/ueventd.harmony.rc:root/ueventd.harmony.rc \
     device/notionink/adam/files/nvram.txt:system/etc/wifi/nvram.txt
 
