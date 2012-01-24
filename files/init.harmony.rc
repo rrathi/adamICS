@@ -55,6 +55,7 @@ on boot
     chown system system /sys/class/backlight/pwm-backlight/brightness
 
 # Sensor
+    chmod 666 /dev/tegra_mediaserver
     chmod 666 /dev/tegra_dc_0
     chmod 666 /dev/tegra_dc_1
     chmod 666 /dev/nvhost-ctrl
