@@ -62,6 +62,10 @@ PRODUCT_COPY_FILES += \
 # Generic
 PRODUCT_COPY_FILES += \
    device/notionink/adam/files/vold.fstab:system/etc/vold.fstab
+   
+# APNs list
+PRODUCT_COPY_FILES += \
+   device/notionink/adam/files/apns-conf.xml:system/etc/apns-conf.xml
 
 PRODUCT_PROPERTY_OVERRIDES := \
     wifi.interface=wlan0 \
