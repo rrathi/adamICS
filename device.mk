@@ -39,13 +39,12 @@ PRODUCT_COPY_FILES := \
     device/notionink/adam/files/init.harmony.rc:root/init.harmony.rc \
     device/notionink/adam/files/init.harmony.usb.rc:root/init.harmony.usb.rc \
     device/notionink/adam/files/ueventd.harmony.rc:root/ueventd.harmony.rc \
+    device/notionink/adam/files/bcmdhd.cal:system/etc/wifi/bcmdhd.cal \
     device/notionink/adam/files/nvram.txt:system/etc/wifi/nvram.txt
 
 # Modules
 PRODUCT_COPY_FILES += \
-    device/notionink/adam/modules/scsi_wait_scan.ko:system/lib/modules/scsi_wait_scan.ko \
-    device/notionink/adam/modules/tun.ko:system/lib/modules/tun.ko \
-    device/notionink/adam/modules/bcm4329.ko:system/lib/modules/bcm4329.ko
+    device/notionink/adam/modules/scsi_wait_scan.ko:system/lib/modules/scsi_wait_scan.ko 
 
 # Bluetooth
 PRODUCT_COPY_FILES += \
@@ -132,6 +131,9 @@ PRODUCT_PACKAGES += \
 # Filesystem management tools
 PRODUCT_PACKAGES += \
 	setup_fs
+	
+WIFI_BAND := 802_11_ABG
+$(call inherit-product-if-exists, hardware/broadcom/wlan/bcmdhd/firmware/bcm4329/device-bcm.mk)
 
 # for bugmailer
 ifneq ($(TARGET_BUILD_VARIANT),user)

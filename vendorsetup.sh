@@ -21,4 +21,3 @@
 # function: add_lunch_combo generic-eng
 export USE_CCACHE=1
 add_lunch_combo full_adam-userdebug
-add_lunch_combo mdl_adam-userdebug
