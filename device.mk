@@ -112,14 +112,12 @@ PRODUCT_COPY_FILES += \
 PRODUCT_PROPERTY_OVERRIDES += \
 	ro.opengles.version=131072
 
-#Set default.prop properties for root + adb
+#Set default.prop properties for root + mtp
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
-	ro.secure=0 \
-	persist.service.adb.enable=1
+	persist.sys.usb.config=mtp
 
 ADDITIONAL_DEFAULT_PROPERTIES += \
-	ro.secure=0 \
-	persist.service.adb.enable=1
+	ro.secure=0 
 
 PRODUCT_CHARACTERISTICS := tablet
 
