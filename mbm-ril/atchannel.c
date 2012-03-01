@@ -504,7 +504,7 @@ static const char *readline(void)
         /* This condition should be synchronized with the read function call
          * size argument below.
          */
-        if (0 >= MAX_AT_RESPONSE - (p_read - ac->ATBuffer)) {
+        if (0 >= MAX_AT_RESPONSE - (p_read - ac->ATBuffer) - 2) {
             LOGE("%s() ERROR: Input line exceeded buffer", __func__);
             /* Ditch buffer and start over again. */
             ac->ATBufferCur = ac->ATBuffer;
@@ -550,7 +550,7 @@ static const char *readline(void)
              * condition above.
              */
             count = read(ac->fd, p_read,
-                         MAX_AT_RESPONSE - (p_read - ac->ATBuffer));
+                         MAX_AT_RESPONSE - (p_read - ac->ATBuffer) - 2);
 
         while (count < 0 && errno == EINTR);
 
@@ -558,7 +558,12 @@ static const char *readline(void)
             AT_DUMP( "<< ", p_read, count );
             ac->readCount += count;
 
+            /* Implementation requires extra EOS or EOL to get it right if
+             * there are no trailing newlines in the read buffer. Adding extra
+             * EOS does not harm even if there actually were trailing EOLs.
+             */
             p_read[count] = '\0';
+            p_read[count+1] = '\0';
 
             /* Skip over leading newlines. */
             while (*ac->ATBufferCur == '\r' || *ac->ATBufferCur == '\n')
@@ -582,6 +587,9 @@ static const char *readline(void)
     ret = ac->ATBufferCur;
     *p_eol = '\0';
 
+    /* The extra EOS added after read takes care of the case when there is no
+     * valid data after p_eol.
+     */
     ac->ATBufferCur = p_eol + 1;     /* This will always be <= p_read,    
                                         and there will be a \0 at *p_read. */
 
