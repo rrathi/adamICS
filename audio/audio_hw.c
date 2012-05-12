@@ -40,6 +40,7 @@
 
 /* Mixer control names */
 #define MIXER_PCM_PLAYBACK_VOLUME     		"PCM Playback Volume"
+#define MIXER_PCM_CAPTURE_VOLUME     		"Rec Capture Volume"
 
 #define MIXER_HEADSET_PLAYBACK_VOLUME       "Headphone Playback Volume"
 #define MIXER_SPEAKER_PLAYBACK_VOLUME       "Auxout Playback Volume"
@@ -108,6 +109,7 @@
 /* conversions from Percent to codec gains */
 #define PERC_TO_PCM_VOLUME(x)     ( (int)((x) * 31 )) 
 #define PERC_TO_CAPTURE_VOLUME(x) ( (int)((x) * 31 )) 
+#define PERC_TO_MIC_VOLUME(x)     ( (int)((x) * 31 ))
 #define PERC_TO_HEADSET_VOLUME(x) ( (int)((x) * 31 )) 
 #define PERC_TO_SPEAKER_VOLUME(x) ( (int)((x) * 31 )) 
 
@@ -142,6 +144,10 @@ struct route_setting defaults[] = {
         .intval = 20,
     },
     {
+	.ctl_name = MIXER_PCM_CAPTURE_VOLUME,
+	.intval = PERC_TO_CAPTURE_VOLUME(0.8),
+    },
+    {
         .ctl_name = MIXER_HEADSET_PLAYBACK_VOLUME,
         .intval = PERC_TO_HEADSET_VOLUME(1),
     },
@@ -151,7 +157,7 @@ struct route_setting defaults[] = {
     },
     {
         .ctl_name = MIXER_MIC_CAPTURE_VOLUME,
-        .intval = PERC_TO_CAPTURE_VOLUME(1),
+        .intval = PERC_TO_MIC_VOLUME(1),
     },
     {
         .ctl_name = MIXER_HEADSET_PLAYBACK_SWITCH,
@@ -204,13 +210,14 @@ struct route_setting defaults[] = {
 struct mixer_ctls
 {
 	
-	struct mixer_ctl *pcm_volume;
+    struct mixer_ctl *pcm_volume;
+    struct mixer_ctl *pcm_cap_volume;
     struct mixer_ctl *headset_volume;
     struct mixer_ctl *speaker_volume;
-	struct mixer_ctl *mic_volume;
+    struct mixer_ctl *mic_volume;
     struct mixer_ctl *headset_switch;
     struct mixer_ctl *speaker_switch;
-	struct mixer_ctl *mic_switch;
+    struct mixer_ctl *mic_switch;
     struct mixer_ctl *LHPMux;
     struct mixer_ctl *RHPMux;
     struct mixer_ctl *SpkMux;
@@ -1876,6 +1883,13 @@ static int adev_open(const hw_module_t* module, const char* name,
                                            MIXER_PCM_PLAYBACK_VOLUME);
 	if (!adev->mixer_ctls.pcm_volume) { 
 		LOGE("Unable to find '%s' mixer control",MIXER_PCM_PLAYBACK_VOLUME);
+		goto error_out;
+	}
+
+    adev->mixer_ctls.pcm_cap_volume = mixer_get_ctl_by_name(adev->mixer, MIXER_PCM_CAPTURE_VOLUME);
+
+	if (!adev->mixer_ctls.pcm_cap_volume) {
+		LOGE("Unable to find '%s' mixer control", MIXER_PCM_CAPTURE_VOLUME);
 		goto error_out;
 	}
 										   
